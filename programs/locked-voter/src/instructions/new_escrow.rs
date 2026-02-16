@@ -15,7 +15,8 @@ pub struct NewEscrow<'info> {
             escrow_owner.key().to_bytes().as_ref()
         ],
         bump,
-        payer = payer
+        payer = payer,
+        space = 8 + 32 + 32 + 1 + 32 + 8 + 8 + 8 + 32,
     )]
     pub escrow: Account<'info, Escrow>,
 

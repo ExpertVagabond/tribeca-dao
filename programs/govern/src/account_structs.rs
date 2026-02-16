@@ -16,6 +16,7 @@ pub struct CreateGovernor<'info> {
         ],
         bump,
         payer = payer,
+        space = 8 + 32 + 1 + 8 + 32 + 32 + (8 + 8 + 8 + 8),
     )]
     pub governor: Account<'info, Governor>,
     /// The Smart Wallet.
@@ -118,7 +119,8 @@ pub struct NewVote<'info> {
             voter.as_ref()
         ],
         bump,
-        payer = payer
+        payer = payer,
+        space = 8 + 32 + 32 + 1 + 1 + 8,
     )]
     pub vote: Account<'info, Vote>,
 

@@ -42,7 +42,7 @@ pub mod govern {
 
         let governor = &mut ctx.accounts.governor;
         governor.base = ctx.accounts.base.key();
-        governor.bump = *ctx.bumps.get("governor").ok_or_else(|| error!(ErrorCode::MathOverflow))?;
+        governor.bump = ctx.bumps.governor;
 
         governor.proposal_count = 0;
         governor.electorate = electorate;
@@ -74,7 +74,7 @@ pub mod govern {
         let proposal = &mut ctx.accounts.proposal;
         proposal.governor = governor.key();
         proposal.index = governor.proposal_count;
-        proposal.bump = *ctx.bumps.get("proposal").ok_or_else(|| error!(ErrorCode::MathOverflow))?;
+        proposal.bump = ctx.bumps.proposal;
 
         proposal.proposer = ctx.accounts.proposer.key();
 
@@ -162,7 +162,7 @@ pub mod govern {
         let vote = &mut ctx.accounts.vote;
         vote.proposal = ctx.accounts.proposal.key();
         vote.voter = voter;
-        vote.bump = *ctx.bumps.get("vote").ok_or_else(|| error!(ErrorCode::MathOverflow))?;
+        vote.bump = ctx.bumps.vote;
 
         vote.side = VoteSide::Pending.into();
         vote.weight = 0;

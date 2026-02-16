@@ -25,7 +25,7 @@ pub mod simple_voter {
         proposal_threshold: u64,
     ) -> Result<()> {
         let electorate = &mut ctx.accounts.electorate;
-        electorate.bump = *ctx.bumps.get("electorate").ok_or_else(|| error!(ErrorCode::MathOverflow))?;
+        electorate.bump = ctx.bumps.electorate;
         electorate.proposal_threshold = proposal_threshold;
         electorate.base = ctx.accounts.base.key();
         electorate.governor = ctx.accounts.governor.key();
@@ -37,7 +37,7 @@ pub mod simple_voter {
     #[access_control(ctx.accounts.validate())]
     pub fn initialize_token_record(ctx: Context<InitializeTokenRecord>, _bump: u8) -> Result<()> {
         let token_record = &mut ctx.accounts.token_record;
-        token_record.bump = *ctx.bumps.get("token_record").ok_or_else(|| error!(ErrorCode::MathOverflow))?;
+        token_record.bump = ctx.bumps.token_record;
         token_record.balance = ctx.accounts.gov_token_vault.amount;
         token_record.authority = ctx.accounts.authority.key();
         token_record.electorate = ctx.accounts.electorate.key();
@@ -108,6 +108,7 @@ pub struct InitializeElectorate<'info> {
         seeds = [b"SimpleElectorate".as_ref(), base.key().to_bytes().as_ref()],
         bump,
         payer = payer,
+        space = 8 + 1 + 32 + 32 + 32 + 8,
     )]
     pub electorate: Account<'info, Electorate>,
     /// TODO(michael): Docs
@@ -134,6 +135,7 @@ pub struct InitializeTokenRecord<'info> {
         ],
         bump,
         payer = payer,
+        space = 8 + 1 + 32 + 32 + 32 + 8 + 8,
     )]
     pub token_record: Account<'info, state::TokenRecord>,
     #[account(mut)]

@@ -135,7 +135,7 @@ impl<'info> Lock<'info> {
         Ok(())
     }
 
-    pub fn check_whitelisted(&self, ra: &[AccountInfo]) -> Result<()> {
+    pub fn check_whitelisted(&self, ra: &'info [AccountInfo<'info>]) -> Result<()> {
         require!(ra.len() == 2, ErrorCode::MustProvideWhitelist);
         let accounts_iter = &mut ra.iter();
         let ix_sysvar_account_info = next_account_info(accounts_iter)?;

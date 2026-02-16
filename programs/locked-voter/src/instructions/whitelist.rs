@@ -15,7 +15,8 @@ pub struct ApproveProgramLockPrivilege<'info> {
             whitelisted_owner.key().to_bytes().as_ref()
         ],
         bump,
-        payer = payer
+        payer = payer,
+        space = 8 + 1 + 32 + 32 + 32,
     )]
     pub whitelist_entry: Account<'info, LockerWhitelistEntry>,
 

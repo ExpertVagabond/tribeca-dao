@@ -27,7 +27,7 @@ pub mod locked_voter {
     #[access_control(ctx.accounts.validate())]
     pub fn new_locker(ctx: Context<NewLocker>, _bump: u8, params: LockerParams) -> Result<()> {
         ctx.accounts
-            .new_locker(*ctx.bumps.get("locker").ok_or_else(|| error!(ErrorCode::MathOverflow))?, params)
+            .new_locker(ctx.bumps.locker, params)
     }
 
     /// Creates a new [Escrow] for an account.
@@ -38,13 +38,13 @@ pub mod locked_voter {
     #[access_control(ctx.accounts.validate())]
     pub fn new_escrow(ctx: Context<NewEscrow>, _bump: u8) -> Result<()> {
         ctx.accounts
-            .new_escrow(*ctx.bumps.get("escrow").ok_or_else(|| error!(ErrorCode::MathOverflow))?)
+            .new_escrow(ctx.bumps.escrow)
     }
 
     /// Stakes `amount` tokens into the [Escrow].
     #[access_control(ctx.accounts.validate())]
     pub fn lock<'info>(
-        ctx: Context<'_, '_, '_, 'info, Lock<'info>>,
+        ctx: Context<'_, '_, 'info, 'info, Lock<'info>>,
         amount: u64,
         duration: i64,
     ) -> Result<()> {
@@ -92,7 +92,7 @@ pub mod locked_voter {
         _bump: u8,
     ) -> Result<()> {
         ctx.accounts
-            .approve_program_lock_privilege(*ctx.bumps.get("whitelist_entry").ok_or_else(|| error!(ErrorCode::MathOverflow))?)
+            .approve_program_lock_privilege(ctx.bumps.whitelist_entry)
     }
 
     /// Close a [LockerWhitelistEntry] revoking program's CPI privilege.
