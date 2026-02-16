@@ -67,3 +67,56 @@ Next stories:
   - S04: Apply Anchor 0.30 API changes
   - S05: Build verification
   - S06: TypeScript SDK migration
+
+---
+
+Story S03: Vendor or stub smart-wallet CPI dependency
+Status: COMPLETE
+Date: 2026-02-16
+Branch: revival/graveyard-hack
+
+Deliverables:
+  - Created programs/smart-wallet/ as a local stub crate (not a real program)
+  - Eliminated crates.io dependency on abandoned smart-wallet 0.7.0
+  - Eliminated transitive vipers dependency (original crate required vipers)
+
+Files created:
+  - programs/smart-wallet/Cargo.toml (name=smart-wallet, v0.7.0, anchor-lang dep only)
+  - programs/smart-wallet/src/lib.rs (stub program with all needed types and CPI surface)
+  - programs/smart-wallet/Xargo.toml (BPF build config)
+
+Types stubbed (matching original crate API):
+  - SmartWallet account struct (base, bump, threshold, minimum_delay, grace_period,
+    owner_set_seqno, num_transactions, owners, reserved)
+  - TXInstruction struct (program_id, keys, data)
+  - TXAccountMeta struct (pubkey, is_signer, is_writable)
+  - CreateTransaction accounts struct (smart_wallet, transaction, proposer, payer, system_program)
+  - Program ID: GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH
+
+CPI functions stubbed (via #[program] macro auto-generation):
+  - smart_wallet::cpi::create_transaction(ctx, bump, instructions)
+  - smart_wallet::cpi::create_transaction_with_timelock(ctx, bump, instructions, eta)
+  - smart_wallet::program::SmartWallet (program type, auto-generated)
+
+Cargo.toml changes:
+  - programs/govern/Cargo.toml: smart-wallet = { path = "../smart-wallet", features = ["cpi"] }
+  - programs/simple-voter/Cargo.toml: smart-wallet = { path = "../smart-wallet", features = ["cpi"] }
+
+Workspace inclusion:
+  - Root Cargo.toml already has members = ["programs/*"], no change needed
+
+Cargo.lock changes:
+  - smart-wallet entry: removed source = "registry+..." (now local)
+  - smart-wallet entry: removed vipers dependency (stub doesn't need it)
+
+Verification:
+  - cargo tree -p smart-wallet: resolves to local path, depends only on anchor-lang
+  - cargo tree -p govern --depth 1: shows smart-wallet v0.7.0 (local path)
+  - cargo tree -p simple-voter --depth 1: shows smart-wallet v0.7.0 (local path)
+  - cargo check --workspace: No smart-wallet-specific errors
+  - Pre-existing wasm-bindgen version error remains (unrelated, from Cargo.lock)
+
+Next stories:
+  - S04: Apply Anchor 0.30 API changes
+  - S05: Build verification
+  - S06: TypeScript SDK migration

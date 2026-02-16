@@ -1208,11 +1208,8 @@ checksum = "f2dd574626839106c320a323308629dcb1acfc96e32a8cba364ddc61ac23ee83"
 [[package]]
 name = "smart-wallet"
 version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fdbe8621e4f7c0bb925593dcf4e36dd82444516f3e30dc44a67b81096421187"
 dependencies = [
  "anchor-lang",
- "vipers",
 ]
 
 [[package]]
@@ -1430,16 +1427,6 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
-
-[[package]]
-name = "vipers"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0fa138cd85f5dea9f1b545983210411a50de434d79a6e64991983258f913166"
-dependencies = [
- "anchor-lang",
- "anchor-spl",
-]
 
 [[package]]
 name = "wait-timeout"

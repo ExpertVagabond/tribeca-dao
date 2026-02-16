@@ -1,0 +1,18 @@
+[package]
+name = "smart-wallet"
+version = "0.7.0"
+edition = "2021"
+description = "Stub of Goki smart-wallet for Tribeca DAO compilation. Not a real program."
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "smart_wallet"
+
+[features]
+no-entrypoint = []
+no-idl = []
+cpi = ["no-entrypoint"]
+default = []
+
+[dependencies]
+anchor-lang = ">=0.22"
