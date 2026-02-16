@@ -6,9 +6,6 @@ use anchor_lang::prelude::*;
 use num_traits::cast::ToPrimitive;
 use smart_wallet::SmartWallet;
 use std::convert::TryInto;
-use vipers::invariant;
-use vipers::unwrap_int;
-use vipers::Validate;
 
 mod account_structs;
 mod account_validators;
@@ -38,14 +35,14 @@ pub mod govern {
         electorate: Pubkey,
         params: GovernanceParameters,
     ) -> Result<()> {
-        invariant!(
+        require!(
             params.timelock_delay_seconds >= 0,
-            "timelock delay must be at least 0 seconds"
+            ErrorCode::InvariantFailed
         );
 
         let governor = &mut ctx.accounts.governor;
         governor.base = ctx.accounts.base.key();
-        governor.bump = *unwrap_int!(ctx.bumps.get("governor"));
+        governor.bump = *ctx.bumps.get("governor").ok_or_else(|| error!(ErrorCode::MathOverflow))?;
 
         governor.proposal_count = 0;
         governor.electorate = electorate;
@@ -77,7 +74,7 @@ pub mod govern {
         let proposal = &mut ctx.accounts.proposal;
         proposal.governor = governor.key();
         proposal.index = governor.proposal_count;
-        proposal.bump = *unwrap_int!(ctx.bumps.get("proposal"));
+        proposal.bump = *ctx.bumps.get("proposal").ok_or_else(|| error!(ErrorCode::MathOverflow))?;
 
         proposal.proposer = ctx.accounts.proposer.key();
 
@@ -112,13 +109,14 @@ pub mod govern {
         let proposal = &mut ctx.accounts.proposal;
         let now = Clock::get()?.unix_timestamp;
         proposal.activated_at = now;
-        proposal.voting_ends_at = unwrap_int!(ctx
+        proposal.voting_ends_at = ctx
             .accounts
             .governor
             .params
             .voting_period
             .to_i64()
-            .and_then(|v: i64| now.checked_add(v)));
+            .and_then(|v: i64| now.checked_add(v))
+            .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
 
         emit!(ProposalActivateEvent {
             governor: proposal.governor,
@@ -164,7 +162,7 @@ pub mod govern {
         let vote = &mut ctx.accounts.vote;
         vote.proposal = ctx.accounts.proposal.key();
         vote.voter = voter;
-        vote.bump = *unwrap_int!(ctx.bumps.get("vote"));
+        vote.bump = *ctx.bumps.get("vote").ok_or_else(|| error!(ErrorCode::MathOverflow))?;
 
         vote.side = VoteSide::Pending.into();
         vote.weight = 0;
@@ -269,4 +267,14 @@ pub enum ErrorCode {
     ProposalNotDraft,
     #[msg("The proposal must be active.")]
     ProposalNotActive,
+    #[msg("Key mismatch.")]
+    KeyMismatch,
+    #[msg("Math overflow.")]
+    MathOverflow,
+    #[msg("Invariant failed.")]
+    InvariantFailed,
+    #[msg("Unexpected None value.")]
+    UnexpectedNone,
+    #[msg("Program error.")]
+    ProgramError,
 }

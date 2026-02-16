@@ -57,14 +57,15 @@ impl<'info> ApproveProgramLockPrivilege<'info> {
 
         Ok(())
     }
-}
 
-impl<'info> Validate<'info> for ApproveProgramLockPrivilege<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.governor.smart_wallet, self.smart_wallet);
-        invariant!(
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.governor.smart_wallet == self.smart_wallet.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
             self.executable_id.executable,
-            "program_id must be an executable"
+            ErrorCode::InvariantFailed
         );
 
         Ok(())
@@ -105,12 +106,16 @@ impl<'info> RevokeProgramLockPrivilege<'info> {
 
         Ok(())
     }
-}
 
-impl<'info> Validate<'info> for RevokeProgramLockPrivilege<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.governor.smart_wallet, self.smart_wallet);
-        assert_keys_eq!(self.whitelist_entry.program_id, self.executable_id);
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.governor.smart_wallet == self.smart_wallet.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.whitelist_entry.program_id == self.executable_id.key(),
+            ErrorCode::KeyMismatch
+        );
 
         Ok(())
     }

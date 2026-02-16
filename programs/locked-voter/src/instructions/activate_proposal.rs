@@ -47,19 +47,32 @@ impl<'info> ActivateProposal<'info> {
     fn current_voting_power(&self) -> Result<u64> {
         self.escrow.voting_power(&self.locker.params)
     }
-}
 
-impl<'info> Validate<'info> for ActivateProposal<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.locker, self.governor.electorate);
-        assert_keys_eq!(self.governor, self.locker.governor);
-        assert_keys_eq!(self.proposal.governor, self.governor);
-        assert_keys_eq!(self.escrow.locker, self.locker);
-        assert_keys_eq!(self.escrow.owner, self.escrow_owner);
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.locker.key() == self.governor.electorate,
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.governor.key() == self.locker.governor,
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.proposal.governor == self.governor.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.escrow.locker == self.locker.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.escrow.owner == self.escrow_owner.key(),
+            ErrorCode::KeyMismatch
+        );
 
-        invariant!(
+        require!(
             self.current_voting_power()? >= self.locker.params.proposal_activation_min_votes,
-            "insufficient voting power to activate a proposal"
+            ErrorCode::InvariantFailed
         );
 
         Ok(())

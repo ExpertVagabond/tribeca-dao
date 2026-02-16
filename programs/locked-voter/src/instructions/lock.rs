@@ -54,15 +54,15 @@ impl<'info> SetLockerParams<'info> {
 
         Ok(())
     }
-}
 
-impl<'info> Validate<'info> for SetLockerParams<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.governor, self.locker.governor, "governor mismatch");
-        assert_keys_eq!(
-            self.smart_wallet,
-            self.governor.smart_wallet,
-            "smart wallet mismatch"
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.governor.key() == self.locker.governor,
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.smart_wallet.key() == self.governor.smart_wallet,
+            ErrorCode::KeyMismatch
         );
         Ok(())
     }
@@ -70,29 +70,30 @@ impl<'info> Validate<'info> for SetLockerParams<'info> {
 
 impl<'info> Lock<'info> {
     pub fn lock(&mut self, amount: u64, duration: i64) -> Result<()> {
-        invariant!(
-            unwrap_int!(duration.to_u64()) >= self.locker.params.min_stake_duration,
-            LockupDurationTooShort
+        require!(
+            duration.to_u64().ok_or_else(|| error!(ErrorCode::MathOverflow))? >= self.locker.params.min_stake_duration,
+            ErrorCode::LockupDurationTooShort
         );
-        invariant!(
-            unwrap_int!(duration.to_u64()) <= self.locker.params.max_stake_duration,
-            LockupDurationTooLong
+        require!(
+            duration.to_u64().ok_or_else(|| error!(ErrorCode::MathOverflow))? <= self.locker.params.max_stake_duration,
+            ErrorCode::LockupDurationTooLong
         );
 
         // check that the escrow refresh is valid
         let escrow = &self.escrow;
         let prev_escrow_ends_at = escrow.escrow_ends_at;
         let next_escrow_started_at = Clock::get()?.unix_timestamp;
-        let next_escrow_ends_at = unwrap_int!(next_escrow_started_at.checked_add(duration));
+        let next_escrow_ends_at = next_escrow_started_at.checked_add(duration)
+            .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
         if prev_escrow_ends_at > next_escrow_ends_at {
             msg!(
                 "next_escrow_ends_at: {}; prev_escrow_ends_at: {}",
                 next_escrow_ends_at,
                 prev_escrow_ends_at
             );
-            invariant!(
+            require!(
                 next_escrow_ends_at >= prev_escrow_ends_at,
-                RefreshCannotShorten
+                ErrorCode::RefreshCannotShorten
             );
         }
 
@@ -135,7 +136,7 @@ impl<'info> Lock<'info> {
     }
 
     pub fn check_whitelisted(&self, ra: &[AccountInfo]) -> Result<()> {
-        invariant!(ra.len() == 2, MustProvideWhitelist);
+        require!(ra.len() == 2, ErrorCode::MustProvideWhitelist);
         let accounts_iter = &mut ra.iter();
         let ix_sysvar_account_info = next_account_info(accounts_iter)?;
         let program_id = get_instruction_relative(0, ix_sysvar_account_info)?.program_id;
@@ -144,32 +145,47 @@ impl<'info> Lock<'info> {
         }
 
         let whitelist_entry_account_info = next_account_info(accounts_iter)?;
-        invariant!(
+        require!(
             !whitelist_entry_account_info.data_is_empty(),
-            ProgramNotWhitelisted
+            ErrorCode::ProgramNotWhitelisted
         );
         let whitelist_entry =
             Account::<LockerWhitelistEntry>::try_from(whitelist_entry_account_info)?;
-        assert_keys_eq!(whitelist_entry.locker, self.locker);
-        assert_keys_eq!(whitelist_entry.program_id, program_id);
+        require!(
+            whitelist_entry.locker == self.locker.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            whitelist_entry.program_id == program_id,
+            ErrorCode::KeyMismatch
+        );
         if whitelist_entry.owner != system_program::ID {
-            assert_keys_eq!(
-                whitelist_entry.owner,
-                self.escrow_owner,
-                EscrowOwnerNotWhitelisted
+            require!(
+                whitelist_entry.owner == self.escrow_owner.key(),
+                ErrorCode::EscrowOwnerNotWhitelisted
             );
         }
 
         Ok(())
     }
-}
 
-impl<'info> Validate<'info> for Lock<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.locker, self.escrow.locker);
-        assert_keys_eq!(self.escrow.tokens, self.escrow_tokens);
-        assert_keys_eq!(self.escrow.owner, self.escrow_owner);
-        assert_keys_eq!(self.escrow_owner, self.source_tokens.owner);
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.locker.key() == self.escrow.locker,
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.escrow.tokens == self.escrow_tokens.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.escrow.owner == self.escrow_owner.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.escrow_owner.key() == self.source_tokens.owner,
+            ErrorCode::KeyMismatch
+        );
 
         Ok(())
     }

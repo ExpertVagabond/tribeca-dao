@@ -7,7 +7,6 @@ pub mod macros;
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 use govern::{Governor, Proposal, Vote};
-use vipers::prelude::*;
 
 mod instructions;
 pub mod locker;
@@ -28,7 +27,7 @@ pub mod locked_voter {
     #[access_control(ctx.accounts.validate())]
     pub fn new_locker(ctx: Context<NewLocker>, _bump: u8, params: LockerParams) -> Result<()> {
         ctx.accounts
-            .new_locker(*unwrap_int!(ctx.bumps.get("locker")), params)
+            .new_locker(*ctx.bumps.get("locker").ok_or_else(|| error!(ErrorCode::MathOverflow))?, params)
     }
 
     /// Creates a new [Escrow] for an account.
@@ -39,7 +38,7 @@ pub mod locked_voter {
     #[access_control(ctx.accounts.validate())]
     pub fn new_escrow(ctx: Context<NewEscrow>, _bump: u8) -> Result<()> {
         ctx.accounts
-            .new_escrow(*unwrap_int!(ctx.bumps.get("escrow")))
+            .new_escrow(*ctx.bumps.get("escrow").ok_or_else(|| error!(ErrorCode::MathOverflow))?)
     }
 
     /// Stakes `amount` tokens into the [Escrow].
@@ -93,7 +92,7 @@ pub mod locked_voter {
         _bump: u8,
     ) -> Result<()> {
         ctx.accounts
-            .approve_program_lock_privilege(*unwrap_int!(ctx.bumps.get("whitelist_entry")))
+            .approve_program_lock_privilege(*ctx.bumps.get("whitelist_entry").ok_or_else(|| error!(ErrorCode::MathOverflow))?)
     }
 
     /// Close a [LockerWhitelistEntry] revoking program's CPI privilege.
@@ -120,4 +119,12 @@ pub enum ErrorCode {
     MustProvideWhitelist,
     #[msg("CPI caller not whitelisted for escrow owner to invoke lock instruction.")]
     EscrowOwnerNotWhitelisted,
+    #[msg("Key mismatch.")]
+    KeyMismatch,
+    #[msg("Math overflow.")]
+    MathOverflow,
+    #[msg("Invariant failed.")]
+    InvariantFailed,
+    #[msg("Unexpected None value.")]
+    UnexpectedNone,
 }

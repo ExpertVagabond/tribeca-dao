@@ -23,11 +23,12 @@ impl<'info> SetVoteDelegate<'info> {
 
         Ok(())
     }
-}
 
-impl<'info> Validate<'info> for SetVoteDelegate<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.escrow.owner, self.escrow_owner);
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.escrow.owner == self.escrow_owner.key(),
+            ErrorCode::KeyMismatch
+        );
 
         Ok(())
     }

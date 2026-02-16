@@ -3,7 +3,6 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::*;
 use govern::{proposal::ProposalState, Governor, Proposal, Vote};
-use vipers::*;
 
 mod account_validators;
 pub mod macros;
@@ -26,7 +25,7 @@ pub mod simple_voter {
         proposal_threshold: u64,
     ) -> Result<()> {
         let electorate = &mut ctx.accounts.electorate;
-        electorate.bump = *unwrap_int!(ctx.bumps.get("electorate"));
+        electorate.bump = *ctx.bumps.get("electorate").ok_or_else(|| error!(ErrorCode::MathOverflow))?;
         electorate.proposal_threshold = proposal_threshold;
         electorate.base = ctx.accounts.base.key();
         electorate.governor = ctx.accounts.governor.key();
@@ -38,7 +37,7 @@ pub mod simple_voter {
     #[access_control(ctx.accounts.validate())]
     pub fn initialize_token_record(ctx: Context<InitializeTokenRecord>, _bump: u8) -> Result<()> {
         let token_record = &mut ctx.accounts.token_record;
-        token_record.bump = *unwrap_int!(ctx.bumps.get("token_record"));
+        token_record.bump = *ctx.bumps.get("token_record").ok_or_else(|| error!(ErrorCode::MathOverflow))?;
         token_record.balance = ctx.accounts.gov_token_vault.amount;
         token_record.authority = ctx.accounts.authority.key();
         token_record.electorate = ctx.accounts.electorate.key();
@@ -69,9 +68,9 @@ pub mod simple_voter {
         ctx.accounts.transfer_from_vault(amount)?;
 
         let token_record = &mut ctx.accounts.token_record;
-        invariant!(
+        require!(
             token_record.unfinalized_votes == 0,
-            "some votes not finalized"
+            ErrorCode::InvariantFailed
         );
         let vault = &mut ctx.accounts.gov_token_vault;
         vault.reload()?;
@@ -91,7 +90,7 @@ pub mod simple_voter {
     }
 
     pub fn finalize_votes(ctx: Context<FinalizeVote>) -> Result<()> {
-        invariant!(ctx.accounts.proposal.get_state()? != ProposalState::Active);
+        require!(ctx.accounts.proposal.get_state()? != ProposalState::Active, ErrorCode::InvariantFailed);
         let token_record = &mut ctx.accounts.token_record;
         token_record.unfinalized_votes -= 1;
 
@@ -222,4 +221,10 @@ pub struct VoterContext<'info> {
 pub enum ErrorCode {
     #[msg("Below proposing threshold.")]
     BelowProposingThreshold,
+    #[msg("Key mismatch.")]
+    KeyMismatch,
+    #[msg("Math overflow.")]
+    MathOverflow,
+    #[msg("Invariant failed.")]
+    InvariantFailed,
 }

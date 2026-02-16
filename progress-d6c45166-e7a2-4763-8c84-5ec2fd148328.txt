@@ -22,9 +22,48 @@ Key findings:
   - ~30 assert_keys_eq! macro invocations to replace
   - ~25 unwrap_int! macro invocations to replace
 
+---
+
+Story S02: Vendor or replace vipers crate
+Status: COMPLETE
+Date: 2026-02-16
+Branch: revival/graveyard-hack
+
+Deliverables:
+  - Removed vipers dependency from all 3 program Cargo.toml files
+  - Replaced all vipers macros with native Anchor equivalents
+  - Converted all Validate trait impls to standalone validate() methods
+
+Programs modified:
+  - programs/govern/ (lib.rs, account_validators.rs, proposal.rs, Cargo.toml)
+  - programs/locked-voter/ (lib.rs, state.rs, instructions/*.rs, Cargo.toml)
+  - programs/simple-voter/ (lib.rs, account_validators.rs, Cargo.toml)
+  - programs/whitelist-tester/ (no changes needed - did not use vipers)
+
+Macro replacements applied:
+  - assert_keys_eq!(a, b) -> require!(a.key() == b.key(), ErrorCode::KeyMismatch)
+  - assert_keys_eq!(a, b, err) -> require!(a.key() == b.key(), ErrorCode::err)
+  - invariant!(cond, msg) -> require!(cond, ErrorCode::InvariantFailed)
+  - invariant!(cond, ErrVariant) -> require!(cond, ErrorCode::ErrVariant)
+  - unwrap_int!(expr) -> expr.ok_or_else(|| error!(ErrorCode::MathOverflow))?
+  - unwrap_opt!(expr, msg) -> expr.ok_or_else(|| error!(ErrorCode::UnexpectedNone))?
+  - program_err!(ErrVariant) -> Err(error!(ErrorCode::ErrVariant))
+
+New error variants added to each program's ErrorCode enum:
+  - KeyMismatch, MathOverflow, InvariantFailed, UnexpectedNone, ProgramError
+
+Validate trait migration:
+  - Removed all `impl Validate for X` blocks
+  - Added standalone `pub fn validate(&self) -> Result<()>` methods on each struct
+  - Kept #[access_control(ctx.accounts.validate())] attributes unchanged (works with methods)
+
+Verification:
+  - cargo check --workspace: No vipers-specific errors
+  - Pre-existing wasm-bindgen version error remains (unrelated, from Cargo.lock)
+  - Zero references to vipers in any program source file
+
 Next stories:
-  - S02: Create smart-wallet stub crate + infrastructure changes
-  - S03: Replace vipers macros + update Cargo.toml dependencies
+  - S03: Create smart-wallet stub crate
   - S04: Apply Anchor 0.30 API changes
   - S05: Build verification
   - S06: TypeScript SDK migration

@@ -51,24 +51,40 @@ impl<'info> CastVote<'info> {
 
     /// The voting power of the escrow at the time the proposal's voting ends.
     fn future_voting_power(&self) -> Result<u64> {
-        Ok(unwrap_int!(self.escrow.voting_power_at_time(
+        Ok(self.escrow.voting_power_at_time(
             &self.locker.params,
             self.proposal.voting_ends_at
-        )))
+        ).ok_or_else(|| error!(ErrorCode::MathOverflow))?)
     }
-}
 
-impl<'info> Validate<'info> for CastVote<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.escrow.locker, self.locker);
-        assert_keys_eq!(self.escrow.vote_delegate, self.vote_delegate);
-        assert_keys_eq!(self.locker.governor, self.governor);
-        assert_keys_eq!(self.proposal.governor, self.governor);
-        assert_keys_eq!(self.vote.proposal, self.proposal);
-        assert_keys_eq!(self.vote.voter, self.escrow.owner);
-        invariant!(
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.escrow.locker == self.locker.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.escrow.vote_delegate == self.vote_delegate.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.locker.governor == self.governor.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.proposal.governor == self.governor.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.vote.proposal == self.proposal.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.vote.voter == self.escrow.owner,
+            ErrorCode::KeyMismatch
+        );
+        require!(
             self.proposal.get_state()? == ProposalState::Active,
-            "proposal must be active"
+            ErrorCode::InvariantFailed
         );
         Ok(())
     }

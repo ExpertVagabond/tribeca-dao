@@ -3,7 +3,6 @@
 use std::convert::TryFrom;
 
 use crate::*;
-use vipers::{program_err, unwrap_int, unwrap_opt};
 
 /// The state of a proposal.
 ///
@@ -69,7 +68,7 @@ impl TryFrom<u8> for VoteSide {
             1 => Ok(VoteSide::Against),
             2 => Ok(VoteSide::For),
             3 => Ok(VoteSide::Abstain),
-            _ => program_err!(InvalidVoteSide),
+            _ => Err(error!(ErrorCode::InvalidVoteSide)),
         }
     }
 }
@@ -93,13 +92,16 @@ impl Proposal {
         match vote_side {
             VoteSide::Pending => {}
             VoteSide::Against => {
-                self.against_votes = unwrap_int!(self.against_votes.checked_sub(vote_weight));
+                self.against_votes = self.against_votes.checked_sub(vote_weight)
+                    .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
             }
             VoteSide::For => {
-                self.for_votes = unwrap_int!(self.for_votes.checked_sub(vote_weight));
+                self.for_votes = self.for_votes.checked_sub(vote_weight)
+                    .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
             }
             VoteSide::Abstain => {
-                self.abstain_votes = unwrap_int!(self.abstain_votes.checked_sub(vote_weight));
+                self.abstain_votes = self.abstain_votes.checked_sub(vote_weight)
+                    .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
             }
         }
         Ok(())
@@ -113,13 +115,16 @@ impl Proposal {
         match vote_side {
             VoteSide::Pending => {}
             VoteSide::Against => {
-                self.against_votes = unwrap_int!(self.against_votes.checked_add(vote_weight));
+                self.against_votes = self.against_votes.checked_add(vote_weight)
+                    .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
             }
             VoteSide::For => {
-                self.for_votes = unwrap_int!(self.for_votes.checked_add(vote_weight));
+                self.for_votes = self.for_votes.checked_add(vote_weight)
+                    .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
             }
             VoteSide::Abstain => {
-                self.abstain_votes = unwrap_int!(self.abstain_votes.checked_add(vote_weight));
+                self.abstain_votes = self.abstain_votes.checked_add(vote_weight)
+                    .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
             }
         }
         Ok(())
@@ -127,10 +132,8 @@ impl Proposal {
 
     /// Gets the state.
     pub fn get_state(&self) -> Result<ProposalState> {
-        Ok(unwrap_opt!(
-            self.state(Clock::get()?.unix_timestamp),
-            "invalid state"
-        ))
+        self.state(Clock::get()?.unix_timestamp)
+            .ok_or_else(|| error!(ErrorCode::UnexpectedNone))
     }
 
     /// Checks if the proposal meets quorum; that is,
@@ -223,9 +226,10 @@ impl<'info> QueueProposal<'info> {
                 cpi_ctx,
                 tx_bump,
                 self.proposal.to_smart_wallet_instructions(),
-                unwrap_int!(Clock::get()?
+                Clock::get()?
                     .unix_timestamp
-                    .checked_add(self.governor.params.timelock_delay_seconds)),
+                    .checked_add(self.governor.params.timelock_delay_seconds)
+                    .ok_or_else(|| error!(ErrorCode::MathOverflow))?,
             )?;
         }
 

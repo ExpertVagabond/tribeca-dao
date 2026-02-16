@@ -51,10 +51,8 @@ impl<'info> NewLocker<'info> {
 
         Ok(())
     }
-}
 
-impl<'info> Validate<'info> for NewLocker<'info> {
-    fn validate(&self) -> Result<()> {
+    pub fn validate(&self) -> Result<()> {
         Ok(())
     }
 }

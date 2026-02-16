@@ -1,32 +1,31 @@
 use crate::*;
-use vipers::Validate;
 
-impl<'info> Validate<'info> for InitializeElectorate<'info> {
-    fn validate(&self) -> Result<()> {
+impl<'info> InitializeElectorate<'info> {
+    pub fn validate(&self) -> Result<()> {
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for InitializeTokenRecord<'info> {
-    fn validate(&self) -> Result<()> {
+impl<'info> InitializeTokenRecord<'info> {
+    pub fn validate(&self) -> Result<()> {
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for ActivateProposal<'info> {
-    fn validate(&self) -> Result<()> {
+impl<'info> ActivateProposal<'info> {
+    pub fn validate(&self) -> Result<()> {
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for TokenContext<'info> {
-    fn validate(&self) -> Result<()> {
+impl<'info> TokenContext<'info> {
+    pub fn validate(&self) -> Result<()> {
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for VoterContext<'info> {
-    fn validate(&self) -> Result<()> {
+impl<'info> VoterContext<'info> {
+    pub fn validate(&self) -> Result<()> {
         Ok(())
     }
 }

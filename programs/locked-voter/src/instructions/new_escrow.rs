@@ -57,10 +57,8 @@ impl<'info> NewEscrow<'info> {
 
         Ok(())
     }
-}
 
-impl<'info> Validate<'info> for NewEscrow<'info> {
-    fn validate(&self) -> Result<()> {
+    pub fn validate(&self) -> Result<()> {
         Ok(())
     }
 }

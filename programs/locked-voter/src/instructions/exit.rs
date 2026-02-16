@@ -52,7 +52,8 @@ impl<'info> Exit<'info> {
 
         // update the locker
         let locker = &mut self.locker;
-        locker.locked_supply = unwrap_int!(locker.locked_supply.checked_sub(self.escrow.amount));
+        locker.locked_supply = locker.locked_supply.checked_sub(self.escrow.amount)
+            .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
 
         emit!(ExitEscrowEvent {
             escrow_owner: self.escrow.owner,
@@ -64,20 +65,27 @@ impl<'info> Exit<'info> {
 
         Ok(())
     }
-}
 
-impl<'info> Validate<'info> for Exit<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.locker, self.escrow.locker);
-        assert_keys_eq!(self.escrow.owner, self.escrow_owner);
-        assert_keys_eq!(self.escrow.tokens, self.escrow_tokens);
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.locker.key() == self.escrow.locker,
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.escrow.owner == self.escrow_owner.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.escrow.tokens == self.escrow_tokens.key(),
+            ErrorCode::KeyMismatch
+        );
         let now = Clock::get()?.unix_timestamp;
         msg!(
             "now: {}; escrow_ends_at: {}",
             now,
             self.escrow.escrow_ends_at
         );
-        invariant!(self.escrow.escrow_ends_at < now, EscrowNotEnded);
+        require!(self.escrow.escrow_ends_at < now, ErrorCode::EscrowNotEnded);
 
         Ok(())
     }

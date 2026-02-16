@@ -88,10 +88,10 @@ impl Escrow {
 
     /// Gets the amount of voting power the [Escrow] currently has.
     pub fn voting_power(&self, locker: &LockerParams) -> Result<u64> {
-        Ok(unwrap_int!(self.voting_power_at_time(
+        Ok(self.voting_power_at_time(
             locker,
             Clock::get()?.unix_timestamp
-        )))
+        ).ok_or_else(|| error!(ErrorCode::MathOverflow))?)
     }
 
     /// Update the escrow and its locker to account for a lock event.
@@ -102,11 +102,13 @@ impl Escrow {
         next_escrow_started_at: i64,
         next_escrow_ends_at: i64,
     ) -> Result<()> {
-        self.amount = unwrap_int!(self.amount.checked_add(lock_amount));
+        self.amount = self.amount.checked_add(lock_amount)
+            .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
         self.escrow_started_at = next_escrow_started_at;
         self.escrow_ends_at = next_escrow_ends_at;
 
-        locker.locked_supply = unwrap_int!(locker.locked_supply.checked_add(lock_amount));
+        locker.locked_supply = locker.locked_supply.checked_add(lock_amount)
+            .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
 
         Ok(())
     }

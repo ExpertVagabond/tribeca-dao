@@ -1,39 +1,45 @@
 //! Validates accounts structs.
 
 use crate::*;
-use vipers::{assert_keys_eq, invariant, unwrap_int, unwrap_opt, Validate};
 
-impl<'info> Validate<'info> for CreateGovernor<'info> {
-    fn validate(&self) -> Result<()> {
-        invariant!(
+impl<'info> CreateGovernor<'info> {
+    pub fn validate(&self) -> Result<()> {
+        require!(
             self.smart_wallet.owners.contains(&self.governor.key()),
-            GovernorNotFound
+            ErrorCode::GovernorNotFound
         );
 
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for CreateProposal<'info> {
-    fn validate(&self) -> Result<()> {
+impl<'info> CreateProposal<'info> {
+    pub fn validate(&self) -> Result<()> {
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for ActivateProposal<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.governor, self.proposal.governor);
-        assert_keys_eq!(self.electorate, self.governor.electorate);
-        invariant!(
+impl<'info> ActivateProposal<'info> {
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.governor.key() == self.proposal.governor,
+            ErrorCode::KeyMismatch
+        );
+        require!(
+            self.electorate.key() == self.governor.electorate,
+            ErrorCode::KeyMismatch
+        );
+        require!(
             self.proposal.get_state()? == ProposalState::Draft,
-            ProposalNotDraft
+            ErrorCode::ProposalNotDraft
         );
 
-        let earliest_activation_time = unwrap_int!(self
+        let earliest_activation_time = self
             .governor
             .params
             .voting_delay
-            .checked_add(self.proposal.created_at as u64));
+            .checked_add(self.proposal.created_at as u64)
+            .ok_or_else(|| error!(ErrorCode::MathOverflow))?;
         let now = Clock::get()?.unix_timestamp as u64;
         if earliest_activation_time > now {
             msg!(
@@ -41,47 +47,43 @@ impl<'info> Validate<'info> for ActivateProposal<'info> {
                 earliest_activation_time,
                 now
             );
-            invariant!(now >= earliest_activation_time, VotingDelayNotMet);
+            require!(now >= earliest_activation_time, ErrorCode::VotingDelayNotMet);
         }
 
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for CancelProposal<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(
-            self.proposer,
-            self.proposal.proposer,
-            "proposer should match recorded"
+impl<'info> CancelProposal<'info> {
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.proposer.key() == self.proposal.proposer,
+            ErrorCode::KeyMismatch
         );
-        assert_keys_eq!(
-            self.governor,
-            self.proposal.governor,
-            "proposal should be under the governor"
+        require!(
+            self.governor.key() == self.proposal.governor,
+            ErrorCode::KeyMismatch
         );
-        invariant!(
+        require!(
             self.proposal.get_state()? == ProposalState::Draft,
-            ProposalNotDraft
+            ErrorCode::ProposalNotDraft
         );
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for QueueProposal<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(
-            self.governor,
-            self.proposal.governor,
-            "proposal should be under the governor"
+impl<'info> QueueProposal<'info> {
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.governor.key() == self.proposal.governor,
+            ErrorCode::KeyMismatch
         );
-        assert_keys_eq!(
-            self.smart_wallet,
-            self.governor.smart_wallet,
-            "smart wallet should match"
+        require!(
+            self.smart_wallet.key() == self.governor.smart_wallet,
+            ErrorCode::KeyMismatch
         );
         let now = Clock::get()?.unix_timestamp;
-        let proposal_state = unwrap_opt!(self.proposal.state(now), "invalid state");
+        let proposal_state = self.proposal.state(now).ok_or_else(|| error!(ErrorCode::UnexpectedNone))?;
         if proposal_state != ProposalState::Succeeded {
             msg!(
                 "now: {}, voting_ends_at: {}",
@@ -98,55 +100,58 @@ impl<'info> Validate<'info> for QueueProposal<'info> {
                 self.governor.params.quorum_votes,
                 self.proposal.abstain_votes,
             );
-            invariant!(
+            require!(
                 proposal_state == ProposalState::Succeeded,
-                "proposal must be succeeded to be queued"
+                ErrorCode::InvariantFailed
             );
         }
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for NewVote<'info> {
-    fn validate(&self) -> Result<()> {
+impl<'info> NewVote<'info> {
+    pub fn validate(&self) -> Result<()> {
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for SetVote<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.governor.electorate, self.electorate);
-        assert_keys_eq!(
-            self.governor,
-            self.proposal.governor,
-            "proposal should be under the governor"
+impl<'info> SetVote<'info> {
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.governor.electorate == self.electorate.key(),
+            ErrorCode::KeyMismatch
         );
-        assert_keys_eq!(
-            self.vote.proposal,
-            self.proposal,
-            "vote proposal should match"
+        require!(
+            self.governor.key() == self.proposal.governor,
+            ErrorCode::KeyMismatch
         );
-        invariant!(
+        require!(
+            self.vote.proposal == self.proposal.key(),
+            ErrorCode::KeyMismatch
+        );
+        require!(
             self.proposal.get_state()? == ProposalState::Active,
-            ProposalNotActive
+            ErrorCode::ProposalNotActive
         );
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for CreateProposalMeta<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(self.proposer, self.proposal.proposer);
+impl<'info> CreateProposalMeta<'info> {
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.proposer.key() == self.proposal.proposer,
+            ErrorCode::KeyMismatch
+        );
         Ok(())
     }
 }
 
-impl<'info> Validate<'info> for SetGovernanceParams<'info> {
-    fn validate(&self) -> Result<()> {
-        assert_keys_eq!(
-            self.smart_wallet,
-            self.governor.smart_wallet,
-            "smart wallet should match"
+impl<'info> SetGovernanceParams<'info> {
+    pub fn validate(&self) -> Result<()> {
+        require!(
+            self.smart_wallet.key() == self.governor.smart_wallet,
+            ErrorCode::KeyMismatch
         );
         Ok(())
     }
