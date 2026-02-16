@@ -14,6 +14,7 @@ crate-type = ["cdylib", "lib"]
 name = "whitelist_tester"
 
 [features]
+idl-build = ["anchor-lang/idl-build"]
 no-entrypoint = []
 no-idl = []
 no-log-ix-name = []
