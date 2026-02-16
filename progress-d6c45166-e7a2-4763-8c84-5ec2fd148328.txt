@@ -1,0 +1,30 @@
+Story S01: Audit dependencies and create migration plan
+Status: COMPLETE
+Date: 2026-02-16
+Branch: revival/graveyard-hack
+
+Deliverables:
+  - MIGRATION.md: Comprehensive migration plan covering all dependency changes
+
+Summary:
+  Audited all Rust and TypeScript dependencies across the Tribeca DAO workspace.
+  Documented every crate/package change needed, vipers macro replacements,
+  smart-wallet stub plan, Anchor 0.22->0.30 breaking changes, current build
+  errors, and the correct migration order.
+
+Key findings:
+  - 2 abandoned Rust crates (vipers, smart-wallet) requiring vendor/stub
+  - 6 abandoned TypeScript packages (@saberhq/*, @gokiprotocol/client)
+  - 4 transitive dependency errors blocking compilation
+  - 27 #[access_control] callsites with Validate trait to migrate
+  - 8 ctx.bumps.get() calls to update for Anchor 0.30
+  - 9 instruction signatures with _bump params to remove
+  - ~30 assert_keys_eq! macro invocations to replace
+  - ~25 unwrap_int! macro invocations to replace
+
+Next stories:
+  - S02: Create smart-wallet stub crate + infrastructure changes
+  - S03: Replace vipers macros + update Cargo.toml dependencies
+  - S04: Apply Anchor 0.30 API changes
+  - S05: Build verification
+  - S06: TypeScript SDK migration

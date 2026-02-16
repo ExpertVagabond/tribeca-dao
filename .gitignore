@@ -42,3 +42,8 @@ deployments/
 Captain.toml
 .goki/
 
+
+# Ignore secrets and credentials
+.env
+*.key
+*.pem
