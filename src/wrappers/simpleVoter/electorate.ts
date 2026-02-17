@@ -51,7 +51,7 @@ export class SimpleVoterWrapper {
     electorateKey: PublicKey
   ): Promise<SimpleVoterWrapper> {
     const electorateData =
-      await sdk.programs.SimpleVoter.account.electorate.fetch(electorateKey);
+      await sdk.programs.SimpleVoter.account.Electorate.fetch(electorateKey);
     const wrapper = new SimpleVoterWrapper(
       sdk,
       electorateKey,
@@ -62,16 +62,16 @@ export class SimpleVoterWrapper {
   }
 
   async fetchProposalData(proposalKey: PublicKey): Promise<ProposalData> {
-    return await this.sdk.programs.Govern.account.proposal.fetch(proposalKey);
+    return await this.sdk.programs.Govern.account.Proposal.fetch(proposalKey);
   }
 
   async fetchTokenRecord(tokenRecordKey: PublicKey): Promise<TokenRecordData> {
-    return await this.program.account.tokenRecord.fetch(tokenRecordKey);
+    return await this.program.account.TokenRecord.fetch(tokenRecordKey);
   }
 
   async fetchVoterMetadata(): Promise<ElectorateData> {
     invariant(this.electorate, "electorate not set");
-    this.electorateData = await this.program.account.electorate.fetch(
+    this.electorateData = await this.program.account.Electorate.fetch(
       this.electorate
     );
     return this.electorateData;
@@ -91,7 +91,7 @@ export class SimpleVoterWrapper {
     );
 
     try {
-      await this.program.account.tokenRecord.fetch(tokenRecord);
+      await this.program.account.TokenRecord.fetch(tokenRecord);
       return { tokenRecord, instruction: null };
     } catch {
       return {
@@ -115,13 +115,13 @@ export class SimpleVoterWrapper {
       instructions.push(initTokenRecordIx);
     }
     instructions.push(
-      this.program.instruction.depositTokens(amount, {
+      this.program.instruction.deposit_tokens(amount, {
         accounts: {
           authority,
-          govTokenAccount,
-          govTokenVault,
-          tokenRecord,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          gov_token_account: govTokenAccount,
+          gov_token_vault: govTokenVault,
+          token_record: tokenRecord,
+          token_program: TOKEN_PROGRAM_ID,
         },
       })
     );
@@ -143,13 +143,13 @@ export class SimpleVoterWrapper {
     const { govTokenAccount, govTokenVault, instructions } =
       await this._getOrCreateGovTokenATAsInternal(authority, tokenRecord);
     instructions.push(
-      this.program.instruction.withdrawTokens(amount, {
+      this.program.instruction.withdraw_tokens(amount, {
         accounts: {
           authority,
-          govTokenAccount,
-          govTokenVault,
-          tokenRecord,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          gov_token_account: govTokenAccount,
+          gov_token_vault: govTokenVault,
+          token_record: tokenRecord,
+          token_program: TOKEN_PROGRAM_ID,
         },
       })
     );
@@ -158,12 +158,12 @@ export class SimpleVoterWrapper {
   }
 
   activateProposal(proposal: PublicKey): TransactionEnvelope {
-    const ix = this.program.instruction.activateProposal({
+    const ix = this.program.instruction.activate_proposal({
       accounts: {
         electorate: this.electorate,
         governor: this.governorKey,
         proposal,
-        governProgram: TRIBECA_ADDRESSES.Govern,
+        govern_program: TRIBECA_ADDRESSES.Govern,
       },
     });
     return new TransactionEnvelope(this.sdk.provider, [ix]);
@@ -194,12 +194,12 @@ export class SimpleVoterWrapper {
     }
 
     ixs.push(
-      this.program.instruction.castVotes(voteSide, {
+      this.program.instruction.cast_votes(voteSide, {
         accounts: {
           electorate: this.electorate,
           authority: authority ?? this.sdk.provider.wallet.publicKey,
           proposal,
-          tokenRecord,
+          token_record: tokenRecord,
           vote: voteKey,
           tribeca: this._genTribecaContext(),
         },
@@ -234,12 +234,12 @@ export class SimpleVoterWrapper {
     }
 
     ixs.push(
-      this.program.instruction.withdrawVotes({
+      this.program.instruction.withdraw_votes({
         accounts: {
           electorate: this.electorate,
           authority,
           proposal,
-          tokenRecord,
+          token_record: tokenRecord,
           vote: voteKey,
           tribeca: this._genTribecaContext(),
         },
@@ -277,13 +277,13 @@ export class SimpleVoterWrapper {
     }
 
     instructions.push(
-      this.program.instruction.depositTokens(amount, {
+      this.program.instruction.deposit_tokens(amount, {
         accounts: {
           authority,
-          govTokenAccount,
-          govTokenVault,
-          tokenRecord,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          gov_token_account: govTokenAccount,
+          gov_token_vault: govTokenVault,
+          token_record: tokenRecord,
+          token_program: TOKEN_PROGRAM_ID,
         },
       })
     );
@@ -314,17 +314,17 @@ export class SimpleVoterWrapper {
       this.electorate
     );
 
-    return this.program.instruction.initializeTokenRecord(bump, {
+    return this.program.instruction.initialize_token_record(bump, {
       accounts: {
         authority,
-        tokenRecord,
+        token_record: tokenRecord,
         electorate: this.electorate,
-        govTokenVault: await getATAAddress({
-          mint: this.electorateData.govTokenMint,
+        gov_token_vault: await getATAAddress({
+          mint: this.electorateData.gov_token_mint,
           owner: tokenRecord,
         }),
         payer: this.sdk.provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
+        system_program: SystemProgram.programId,
       },
     });
   }
@@ -337,12 +337,12 @@ export class SimpleVoterWrapper {
 
     const ixs: TransactionInstruction[] = [];
     ixs.push(
-      this.program.instruction.castVotes(voteSide, {
+      this.program.instruction.cast_votes(voteSide, {
         accounts: {
           electorate: this.electorate,
           authority,
           proposal,
-          tokenRecord,
+          token_record: tokenRecord,
           vote,
           tribeca: this._genTribecaContext(),
         },
@@ -378,14 +378,14 @@ export class SimpleVoterWrapper {
     const { address: govTokenAccount, instruction: ix1 } = await getOrCreateATA(
       {
         provider,
-        mint: this.electorateData.govTokenMint,
+        mint: this.electorateData.gov_token_mint,
         owner: authority,
         payer: authority,
       }
     );
     const { address: govTokenVault, instruction: ix2 } = await getOrCreateATA({
       provider,
-      mint: this.electorateData.govTokenMint,
+      mint: this.electorateData.gov_token_mint,
       owner: tokenRecord,
       payer: authority,
     });

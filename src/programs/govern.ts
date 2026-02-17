@@ -8,23 +8,21 @@ export * from "../idls/govern";
 /**
  * Account data types extracted from the Govern IDL.
  */
-export type GovernorData = IdlAccounts<GovernIDL>["governor"];
-export type ProposalData = IdlAccounts<GovernIDL>["proposal"];
-export type VoteData = IdlAccounts<GovernIDL>["vote"];
-export type ProposalMetaData = IdlAccounts<GovernIDL>["proposalMeta"] & {
+export type GovernorData = IdlAccounts<GovernIDL>["Governor"];
+export type ProposalData = IdlAccounts<GovernIDL>["Proposal"];
+export type VoteData = IdlAccounts<GovernIDL>["Vote"];
+export type ProposalMetaData = IdlAccounts<GovernIDL>["ProposalMeta"] & {
   title: string;
-  descriptionLink: string;
+  description_link: string;
 };
 
 /**
  * Defined types from the Govern IDL.
  */
-export type GovernanceParameters =
-  IdlTypes<GovernIDL>["governanceParameters"];
-export type ProposalInstruction =
-  IdlTypes<GovernIDL>["proposalInstruction"] & {
-    keys: AccountMeta[];
-  };
+export type GovernanceParameters = IdlTypes<GovernIDL>["GovernanceParameters"];
+export type ProposalInstruction = IdlTypes<GovernIDL>["ProposalInstruction"] & {
+  keys: AccountMeta[];
+};
 
 /**
  * The Govern program type.

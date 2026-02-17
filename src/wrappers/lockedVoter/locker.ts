@@ -59,15 +59,15 @@ export class LockerWrapper {
    * @returns
    */
   async reload(): Promise<LockerData> {
-    return this.program.account.locker.fetch(this.locker);
+    return this.program.account.Locker.fetch(this.locker);
   }
 
   async fetchProposalData(proposalKey: PublicKey): Promise<ProposalData> {
-    return await this.sdk.govern.program.account.proposal.fetch(proposalKey);
+    return await this.sdk.govern.program.account.Proposal.fetch(proposalKey);
   }
 
   async fetchEscrow(escrowKey: PublicKey): Promise<EscrowData> {
-    return await this.program.account.escrow.fetch(escrowKey);
+    return await this.program.account.Escrow.fetch(escrowKey);
   }
 
   async fetchEscrowByAuthority(
@@ -95,7 +95,7 @@ export class LockerWrapper {
     instruction: TransactionInstruction | null;
   }> {
     const [escrow] = await findEscrowAddress(this.locker, authority);
-    const escrowData = await this.program.account.escrow.fetchNullable(escrow);
+    const escrowData = await this.program.account.Escrow.fetchNullable(escrow);
     if (escrowData) {
       return { escrow: escrow, instruction: null };
     } else {
@@ -115,13 +115,13 @@ export class LockerWrapper {
     authority: PublicKey = this.sdk.provider.wallet.publicKey
   ): Promise<TransactionInstruction> {
     const [escrow, bump] = await findEscrowAddress(this.locker, authority);
-    return this.program.instruction.newEscrow(bump, {
+    return this.program.instruction.new_escrow(bump, {
       accounts: {
         locker: this.locker,
         escrow,
-        escrowOwner: authority,
+        escrow_owner: authority,
         payer: this.sdk.provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
+        system_program: SystemProgram.programId,
       },
     });
   }
@@ -134,14 +134,14 @@ export class LockerWrapper {
     authority?: PublicKey;
   }): Promise<TransactionEnvelope> {
     const [escrow] = await findEscrowAddress(this.locker, authority);
-    const ix = this.program.instruction.activateProposal({
+    const ix = this.program.instruction.activate_proposal({
       accounts: {
         locker: this.locker,
         governor: this.governorKey,
         proposal,
         escrow,
-        escrowOwner: authority,
-        governProgram: TRIBECA_ADDRESSES.Govern,
+        escrow_owner: authority,
+        govern_program: TRIBECA_ADDRESSES.Govern,
       },
     });
     return new TransactionEnvelope(this.sdk.provider, [ix]);
@@ -173,12 +173,12 @@ export class LockerWrapper {
         accounts: {
           locker: this.locker,
           escrow: escrow,
-          escrowOwner: authority,
-          escrowTokens: govTokenVault,
-          sourceTokens: govTokenAccount,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          escrow_owner: authority,
+          escrow_tokens: govTokenVault,
+          source_tokens: govTokenAccount,
+          token_program: TOKEN_PROGRAM_ID,
         },
-        remainingAccounts: lockerData.params.whitelistEnabled
+        remainingAccounts: lockerData.params.whitelist_enabled
           ? [
               {
                 pubkey: SYSVAR_INSTRUCTIONS_PUBKEY,
@@ -214,11 +214,11 @@ export class LockerWrapper {
         accounts: {
           locker: this.locker,
           escrow,
-          escrowOwner: authority,
-          escrowTokens: escrowData.tokens,
-          destinationTokens: govTokenAccount,
+          escrow_owner: authority,
+          escrow_tokens: escrowData.tokens,
+          destination_tokens: govTokenAccount,
           payer: this.sdk.provider.wallet.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          token_program: TOKEN_PROGRAM_ID,
         },
       })
     );
@@ -256,15 +256,15 @@ export class LockerWrapper {
     }
 
     ixs.push(
-      this.program.instruction.castVote(voteSide, {
+      this.program.instruction.cast_vote(voteSide, {
         accounts: {
           locker: this.locker,
           escrow: escrow,
-          voteDelegate: authority ?? this.sdk.provider.wallet.publicKey,
+          vote_delegate: authority ?? this.sdk.provider.wallet.publicKey,
           proposal,
           vote: voteKey,
           governor: this.governorKey,
-          governProgram: TRIBECA_ADDRESSES.Govern,
+          govern_program: TRIBECA_ADDRESSES.Govern,
         },
       })
     );
@@ -283,10 +283,10 @@ export class LockerWrapper {
     const [escrow] = await findEscrowAddress(this.locker, authority);
 
     return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.setVoteDelegate(newDelegate, {
+      this.program.instruction.set_vote_delegate(newDelegate, {
         accounts: {
           escrow,
-          escrowOwner: authority,
+          escrow_owner: authority,
         },
       }),
     ]);
@@ -302,34 +302,34 @@ export class LockerWrapper {
       owner
     );
     const lockerData = await this.reload();
-    const governorData = await this.sdk.programs.Govern.account.governor.fetch(
+    const governorData = await this.sdk.programs.Govern.account.Governor.fetch(
       lockerData.governor
     );
-    return this.program.instruction.approveProgramLockPrivilege(bump, {
+    return this.program.instruction.approve_program_lock_privilege(bump, {
       accounts: {
         locker: this.locker,
-        whitelistEntry,
+        whitelist_entry: whitelistEntry,
         governor: lockerData.governor,
-        smartWallet: governorData.smartWallet,
-        executableId: programId,
-        whitelistedOwner: owner ?? SystemProgram.programId,
+        smart_wallet: governorData.smart_wallet,
+        executable_id: programId,
+        whitelisted_owner: owner ?? SystemProgram.programId,
         payer: this.sdk.provider.wallet.publicKey,
-        systemProgram: SystemProgram.programId,
+        system_program: SystemProgram.programId,
       },
     });
   }
 
   async setLockerParamsIx(args: LockerParams): Promise<TransactionInstruction> {
     const lockerData = await this.reload();
-    const governorData = await this.sdk.programs.Govern.account.governor.fetch(
+    const governorData = await this.sdk.programs.Govern.account.Governor.fetch(
       lockerData.governor
     );
 
-    return this.program.instruction.setLockerParams(args, {
+    return this.program.instruction.set_locker_params(args, {
       accounts: {
         locker: this.locker,
         governor: lockerData.governor,
-        smartWallet: governorData.smartWallet,
+        smart_wallet: governorData.smart_wallet,
       },
     });
   }
@@ -348,14 +348,14 @@ export class LockerWrapper {
     const { address: govTokenAccount, instruction: ix1 } = await getOrCreateATA(
       {
         provider,
-        mint: lockerData.tokenMint,
+        mint: lockerData.token_mint,
         owner: authority,
         payer: authority,
       }
     );
     const { address: govTokenVault, instruction: ix2 } = await getOrCreateATA({
       provider,
-      mint: lockerData.tokenMint,
+      mint: lockerData.token_mint,
       owner: escrow,
       payer: authority,
     });

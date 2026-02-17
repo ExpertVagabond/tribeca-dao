@@ -41,7 +41,7 @@ export class GovernorWrapper {
   }
 
   async reload(): Promise<GovernorData> {
-    return await this.program.account.governor.fetch(this.governorKey);
+    return await this.program.account.Governor.fetch(this.governorKey);
   }
 
   async data(): Promise<GovernorData> {
@@ -57,7 +57,7 @@ export class GovernorWrapper {
   }
 
   async fetchProposalByKey(key: PublicKey): Promise<ProposalData> {
-    return await this.program.account.proposal.fetch(key);
+    return await this.program.account.Proposal.fetch(key);
   }
 
   async fetchProposal(index: BN): Promise<ProposalData> {
@@ -67,7 +67,7 @@ export class GovernorWrapper {
 
   async fetchProposalMeta(proposalKey: PublicKey): Promise<ProposalMetaData> {
     const [key] = await findProposalMetaAddress(proposalKey);
-    return await this.program.account.proposalMeta.fetch(key);
+    return await this.program.account.ProposalMeta.fetch(key);
   }
 
   /**
@@ -88,7 +88,7 @@ export class GovernorWrapper {
     descriptionLink: string;
   }): Promise<TransactionEnvelope> {
     const [proposalMetaKey, bump] = await findProposalMetaAddress(proposal);
-    const ix = this.sdk.programs.Govern.instruction.createProposalMeta(
+    const ix = this.sdk.programs.Govern.instruction.create_proposal_meta(
       bump,
       title,
       descriptionLink,
@@ -96,9 +96,9 @@ export class GovernorWrapper {
         accounts: {
           proposal,
           proposer,
-          proposalMeta: proposalMetaKey,
+          proposal_meta: proposalMetaKey,
           payer: this.provider.wallet.publicKey,
-          systemProgram: SystemProgram.programId,
+          system_program: SystemProgram.programId,
         },
       }
     );
@@ -119,19 +119,19 @@ export class GovernorWrapper {
     const { provider } = this.sdk;
 
     const governorData = await this.reload();
-    const index = new u64(governorData.proposalCount);
+    const index = new u64(governorData.proposal_count);
     const [proposal, bump] = await findProposalAddress(this.governorKey, index);
 
     const ixs: TransactionInstruction[] = [];
 
     ixs.push(
-      this.sdk.programs.Govern.instruction.createProposal(bump, instructions, {
+      this.sdk.programs.Govern.instruction.create_proposal(bump, instructions, {
         accounts: {
           governor: this.governorKey,
           proposal,
           proposer,
           payer: provider.wallet.publicKey,
-          systemProgram: SystemProgram.programId,
+          system_program: SystemProgram.programId,
         },
       })
     );
@@ -161,7 +161,7 @@ export class GovernorWrapper {
     const [proposal] = await findProposalAddress(this.governorKey, index);
     const smartWalletDataRaw =
       await this.program.provider.connection.getAccountInfo(
-        governorData.smartWallet
+        governorData.smart_wallet
       );
     if (!smartWalletDataRaw) {
       throw new Error("smart wallet not found");
@@ -170,19 +170,19 @@ export class GovernorWrapper {
       smartWalletDataRaw.data
     );
     const [txKey, txBump] = await findTransactionAddress(
-      governorData.smartWallet,
+      governorData.smart_wallet,
       smartWalletData.numTransactions.toNumber()
     );
     return new TransactionEnvelope(this.sdk.provider, [
-      this.program.instruction.queueProposal(txBump, {
+      this.program.instruction.queue_proposal(txBump, {
         accounts: {
           governor: this.governorKey,
           proposal,
-          smartWallet: governorData.smartWallet,
-          smartWalletProgram,
+          smart_wallet: governorData.smart_wallet,
+          smart_wallet_program: smartWalletProgram,
           transaction: txKey,
           payer,
-          systemProgram: SystemProgram.programId,
+          system_program: SystemProgram.programId,
         },
       }),
     ]);
@@ -200,7 +200,7 @@ export class GovernorWrapper {
     proposer?: PublicKey;
   }): TransactionEnvelope {
     return new TransactionEnvelope(this.sdk.provider, [
-      this.sdk.programs.Govern.instruction.cancelProposal({
+      this.sdk.programs.Govern.instruction.cancel_proposal({
         accounts: {
           governor: this.governorKey,
           proposal,
@@ -225,7 +225,7 @@ export class GovernorWrapper {
     const [voteKey, bump] = await findVoteAddress(proposal, voter);
 
     try {
-      await this.program.account.vote.fetch(voteKey);
+      await this.program.account.Vote.fetch(voteKey);
       return { voteKey, instruction: null };
     } catch {
       return {
@@ -256,12 +256,12 @@ export class GovernorWrapper {
     }
 
     const [voteKey, bump] = voteKeyAndBump;
-    return this.program.instruction.newVote(bump, voter, {
+    return this.program.instruction.new_vote(bump, voter, {
       accounts: {
         vote: voteKey,
         proposal,
         payer,
-        systemProgram: SystemProgram.programId,
+        system_program: SystemProgram.programId,
       },
     });
   }
@@ -269,11 +269,11 @@ export class GovernorWrapper {
   async setGovernanceParamsIx(
     newParams: GovernanceParameters
   ): Promise<TransactionInstruction> {
-    const { smartWallet } = await this.data();
-    return this.program.instruction.setGovernanceParams(newParams, {
+    const data = await this.data();
+    return this.program.instruction.set_governance_params(newParams, {
       accounts: {
         governor: this.governorKey,
-        smartWallet,
+        smart_wallet: data.smart_wallet,
       },
     });
   }

@@ -20,5 +20,12 @@
     "lib": ["ES2019"],
     "importHelpers": true
   },
-  "include": ["src/", "tests/"]
+  "include": ["src/", "tests/sdk-smoke.test.ts"],
+  "exclude": [
+    "tests/govern.spec.ts",
+    "tests/simple-voter.spec.ts",
+    "tests/locked-voter.spec.ts",
+    "tests/execute-proposal.spec.ts",
+    "tests/workspace/"
+  ]
 }

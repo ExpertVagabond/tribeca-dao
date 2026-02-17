@@ -1,4 +1,3 @@
-import { Program } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "bn.js";
 
@@ -62,10 +61,10 @@ export const DEFAULT_VOTE_PERIOD = new BN(3).mul(ONE_DAY);
  * Default parameters for a Governor.
  */
 export const DEFAULT_GOVERNANCE_PARAMETERS: GovernanceParameters = {
-  timelockDelaySeconds: new BN(0),
-  quorumVotes: DEFAULT_QUORUM_VOTES,
-  votingDelay: DEFAULT_VOTE_DELAY,
-  votingPeriod: DEFAULT_VOTE_PERIOD,
+  timelock_delay_seconds: new BN(0),
+  quorum_votes: DEFAULT_QUORUM_VOTES,
+  voting_delay: DEFAULT_VOTE_DELAY,
+  voting_period: DEFAULT_VOTE_PERIOD,
 };
 
 /**
@@ -73,13 +72,13 @@ export const DEFAULT_GOVERNANCE_PARAMETERS: GovernanceParameters = {
  */
 export const DEFAULT_LOCKER_PARAMS: LockerParams = {
   // 1M tokens if max locked.
-  proposalActivationMinVotes: new BN(10_000_000 * 10 ** 6),
+  proposal_activation_min_votes: new BN(10_000_000 * 10 ** 6),
   // 1 day.
-  minStakeDuration: ONE_DAY,
+  min_stake_duration: ONE_DAY,
   // 5 years.
-  maxStakeDuration: new BN(5).mul(ONE_YEAR),
-  maxStakeVoteMultiplier: 10,
-  whitelistEnabled: false,
+  max_stake_duration: new BN(5).mul(ONE_YEAR),
+  max_stake_vote_multiplier: 10,
+  whitelist_enabled: false,
 };
 
 /**

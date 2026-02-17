@@ -1,6 +1,6 @@
-import { GokiSDK } from "@gokiprotocol/client";
-import { Program } from "@coral-xyz/anchor";
 import type { BN } from "@coral-xyz/anchor";
+import { Program } from "@coral-xyz/anchor";
+import { GokiSDK } from "@gokiprotocol/client";
 import type { AugmentedProvider, Provider } from "@saberhq/solana-contrib";
 import {
   SolanaAugmentedProvider,
@@ -24,17 +24,27 @@ import type { PendingElectorate } from "./wrappers/simpleVoter/types";
 
 /**
  * Helper to construct program instances from IDLs and addresses.
+ *
+ * The `any` casts are necessary because @coral-xyz/anchor 0.30+ changed
+ * the Program constructor signature and we bridge legacy IDL types.
  */
+/* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any */
 function makeProgramMap(provider: Provider): TribecaPrograms {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const mkProgram = (idl: any, address: any) =>
-    new Program(idl, address, provider as any) as any;
+  const mkProgram = (idl: unknown, address: unknown) =>
+    new Program(idl as any, address as any, provider as any) as any;
   return {
-    SimpleVoter: mkProgram(TRIBECA_IDLS.SimpleVoter, TRIBECA_ADDRESSES.SimpleVoter),
+    SimpleVoter: mkProgram(
+      TRIBECA_IDLS.SimpleVoter,
+      TRIBECA_ADDRESSES.SimpleVoter
+    ),
     Govern: mkProgram(TRIBECA_IDLS.Govern, TRIBECA_ADDRESSES.Govern),
-    LockedVoter: mkProgram(TRIBECA_IDLS.LockedVoter, TRIBECA_ADDRESSES.LockedVoter),
+    LockedVoter: mkProgram(
+      TRIBECA_IDLS.LockedVoter,
+      TRIBECA_ADDRESSES.LockedVoter
+    ),
   };
 }
+/* eslint-enable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-explicit-any */
 
 /**
  * Tribeca protocol SDK.
@@ -106,7 +116,7 @@ export class TribecaSDK {
       tx: new TransactionEnvelope(
         this.provider,
         [
-          this.programs.SimpleVoter.instruction.initializeElectorate(
+          this.programs.SimpleVoter.instruction.initialize_electorate(
             bump,
             proposalThreshold,
             {
@@ -114,9 +124,9 @@ export class TribecaSDK {
                 base: baseKP.publicKey,
                 governor,
                 electorate,
-                govTokenMint,
+                gov_token_mint: govTokenMint,
                 payer: this.provider.wallet.publicKey,
-                systemProgram: SystemProgram.programId,
+                system_program: SystemProgram.programId,
               },
             }
           ),
@@ -162,14 +172,14 @@ export class TribecaSDK {
       tx: new TransactionEnvelope(
         this.provider,
         [
-          this.programs.LockedVoter.instruction.newLocker(bump, lockerParams, {
+          this.programs.LockedVoter.instruction.new_locker(bump, lockerParams, {
             accounts: {
               base: baseKP.publicKey,
               governor,
               locker,
-              tokenMint: govTokenMint,
+              token_mint: govTokenMint,
               payer: this.provider.wallet.publicKey,
-              systemProgram: SystemProgram.programId,
+              system_program: SystemProgram.programId,
             },
           }),
         ],

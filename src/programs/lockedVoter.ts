@@ -7,15 +7,15 @@ export * from "../idls/locked_voter";
 /**
  * Account data types extracted from the LockedVoter IDL.
  */
-export type LockerData = IdlAccounts<LockedVoterIDL>["locker"];
-export type EscrowData = IdlAccounts<LockedVoterIDL>["escrow"];
+export type LockerData = IdlAccounts<LockedVoterIDL>["Locker"];
+export type EscrowData = IdlAccounts<LockedVoterIDL>["Escrow"];
 export type LockerWhitelistEntryData =
-  IdlAccounts<LockedVoterIDL>["lockerWhitelistEntry"];
+  IdlAccounts<LockedVoterIDL>["LockerWhitelistEntry"];
 
 /**
  * Defined types from the LockedVoter IDL.
  */
-export type LockerParams = IdlTypes<LockedVoterIDL>["lockerParams"];
+export type LockerParams = IdlTypes<LockedVoterIDL>["LockerParams"];
 
 /**
  * The LockedVoter program type.

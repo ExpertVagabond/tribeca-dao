@@ -14,21 +14,21 @@ export const getProposalState = ({
   proposalData: ProposalData;
   currentTimeSeconds?: number;
 }): ProposalState => {
-  if (proposalData.canceledAt.gt(new BN(0))) {
+  if (proposalData.canceled_at.gt(new BN(0))) {
     return ProposalState.Canceled;
-  } else if (proposalData.activatedAt.eq(new BN(0))) {
+  } else if (proposalData.activated_at.eq(new BN(0))) {
     return ProposalState.Draft;
-  } else if (proposalData.votingEndsAt.gte(new BN(currentTimeSeconds))) {
+  } else if (proposalData.voting_ends_at.gte(new BN(currentTimeSeconds))) {
     return ProposalState.Active;
   } else if (
-    proposalData.forVotes.lte(proposalData.againstVotes) ||
-    proposalData.forVotes
-      .add(proposalData.abstainVotes)
-      .add(proposalData.againstVotes)
-      .lt(proposalData.quorumVotes)
+    proposalData.for_votes.lte(proposalData.against_votes) ||
+    proposalData.for_votes
+      .add(proposalData.abstain_votes)
+      .add(proposalData.against_votes)
+      .lt(proposalData.quorum_votes)
   ) {
     return ProposalState.Defeated;
-  } else if (proposalData.queuedAt.gt(new BN(0))) {
+  } else if (proposalData.queued_at.gt(new BN(0))) {
     return ProposalState.Queued;
   }
   return ProposalState.Succeeded;

@@ -22,7 +22,7 @@ export class GovernWrapper {
   }
 
   async fetchVote(key: PublicKey): Promise<VoteData> {
-    return await this.program.account.vote.fetch(key);
+    return await this.program.account.Vote.fetch(key);
   }
 
   async createGovernor({
@@ -46,7 +46,7 @@ export class GovernWrapper {
       tx: new TransactionEnvelope(
         this.provider,
         [
-          this.sdk.programs.Govern.instruction.createGovernor(
+          this.sdk.programs.Govern.instruction.create_governor(
             bump,
             electorate,
             {
@@ -57,9 +57,9 @@ export class GovernWrapper {
               accounts: {
                 base: baseKP.publicKey,
                 governor,
-                smartWallet,
+                smart_wallet: smartWallet,
                 payer: this.provider.wallet.publicKey,
-                systemProgram: SystemProgram.programId,
+                system_program: SystemProgram.programId,
               },
             }
           ),

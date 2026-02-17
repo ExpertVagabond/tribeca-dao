@@ -40,7 +40,7 @@ export class VoteEscrow {
    */
   async lockerData() {
     if (!this._lockerData) {
-      this._lockerData = await this.lockerProgram.account.locker.fetch(
+      this._lockerData = await this.lockerProgram.account.Locker.fetch(
         this.locker
       );
     }
@@ -52,7 +52,7 @@ export class VoteEscrow {
    */
   async data() {
     if (!this._escrowData) {
-      this._escrowData = await this.lockerProgram.account.escrow.fetch(
+      this._escrowData = await this.lockerProgram.account.Escrow.fetch(
         this.escrowKey
       );
     }
@@ -67,28 +67,28 @@ export class VoteEscrow {
     const escrowData = await this.data();
     const lockerData = await this.lockerData();
     return (timestampSeconds: number) => {
-      if (escrowData.escrowStartedAt.eq(new BN(0))) {
+      if (escrowData.escrow_started_at.eq(new BN(0))) {
         return new BN(0);
       }
       if (
-        timestampSeconds < escrowData.escrowStartedAt.toNumber() ||
-        timestampSeconds >= escrowData.escrowEndsAt.toNumber()
+        timestampSeconds < escrowData.escrow_started_at.toNumber() ||
+        timestampSeconds >= escrowData.escrow_ends_at.toNumber()
       ) {
         return new BN(0);
       }
-      const secondsUntilLockupExpiry = escrowData.escrowEndsAt
+      const secondsUntilLockupExpiry = escrowData.escrow_ends_at
         .sub(new BN(timestampSeconds))
         .toNumber();
       const relevantSecondsUntilLockupExpiry = Math.min(
         secondsUntilLockupExpiry,
-        lockerData.params.maxStakeDuration.toNumber()
+        lockerData.params.max_stake_duration.toNumber()
       );
       const powerIfMaxLockup = escrowData.amount.mul(
-        new BN(lockerData.params.maxStakeVoteMultiplier)
+        new BN(lockerData.params.max_stake_vote_multiplier)
       );
       return powerIfMaxLockup
         .mul(new BN(relevantSecondsUntilLockupExpiry))
-        .div(lockerData.params.maxStakeDuration);
+        .div(lockerData.params.max_stake_duration);
     };
   }
 
@@ -109,14 +109,14 @@ export class VoteEscrow {
    */
   activateProposal(proposal: PublicKey): TransactionEnvelope {
     return this.provider.newTX([
-      this.lockerProgram.instruction.activateProposal({
+      this.lockerProgram.instruction.activate_proposal({
         accounts: {
           locker: this.locker,
           governor: this.governorKey,
           proposal,
           escrow: this.escrowKey,
-          escrowOwner: this.owner,
-          governProgram: TRIBECA_ADDRESSES.Govern,
+          escrow_owner: this.owner,
+          govern_program: TRIBECA_ADDRESSES.Govern,
         },
       }),
     ]);
@@ -137,7 +137,7 @@ export class VoteEscrow {
     const vote = await this.provider.getAccountInfo(voteKey);
     let createVoteIX: TransactionInstruction | null = null;
     if (!vote) {
-      createVoteIX = this.sdk.programs.Govern.instruction.newVote(
+      createVoteIX = this.sdk.programs.Govern.instruction.new_vote(
         voteBump,
         this.owner,
         {
@@ -145,22 +145,22 @@ export class VoteEscrow {
             proposal,
             vote: voteKey,
             payer: this.provider.wallet.publicKey,
-            systemProgram: SystemProgram.programId,
+            system_program: SystemProgram.programId,
           },
         }
       );
     }
     return this.provider.newTX([
       createVoteIX,
-      this.lockerProgram.instruction.castVote(side, {
+      this.lockerProgram.instruction.cast_vote(side, {
         accounts: {
           locker: this.locker,
           escrow: this.escrowKey,
-          voteDelegate: this.owner,
+          vote_delegate: this.owner,
           proposal,
           vote: voteKey,
           governor: this.governorKey,
-          governProgram: TRIBECA_ADDRESSES.Govern,
+          govern_program: TRIBECA_ADDRESSES.Govern,
         },
       }),
     ]);
@@ -190,10 +190,10 @@ export class VoteEscrow {
           accounts: {
             locker: this.locker,
             escrow: this.escrowKey,
-            escrowTokens: escrowData.tokens,
-            escrowOwner: escrowData.owner,
-            sourceTokens,
-            tokenProgram: TOKEN_PROGRAM_ID,
+            escrow_tokens: escrowData.tokens,
+            escrow_owner: escrowData.owner,
+            source_tokens: sourceTokens,
+            token_program: TOKEN_PROGRAM_ID,
           },
         }
       ),
@@ -209,7 +209,7 @@ export class VoteEscrow {
     const escrowData = await this.data();
     const destinationTokens = await getOrCreateATA({
       provider: this.provider,
-      mint: lockerData.tokenMint,
+      mint: lockerData.token_mint,
       owner: escrowData.owner,
     });
     return this.provider.newTX([
@@ -218,11 +218,11 @@ export class VoteEscrow {
         accounts: {
           locker: this.locker,
           escrow: this.escrowKey,
-          escrowOwner: escrowData.owner,
-          escrowTokens: escrowData.tokens,
-          destinationTokens: destinationTokens.address,
+          escrow_owner: escrowData.owner,
+          escrow_tokens: escrowData.tokens,
+          destination_tokens: destinationTokens.address,
           payer: this.provider.wallet.publicKey,
-          tokenProgram: TOKEN_PROGRAM_ID,
+          token_program: TOKEN_PROGRAM_ID,
         },
       }),
     ]);
