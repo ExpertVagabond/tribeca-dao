@@ -1,8 +1,31 @@
-# ♜ Tribeca
+# ♜ Tribeca — Revived
+
+> **Solana Graveyard Hackathon Revival** | Track: DAOs ($5K)
+>
+> This fork brings the abandoned Tribeca governance protocol back to life on modern Solana tooling.
+> See [MIGRATION.md](./MIGRATION.md) for the full technical migration guide.
+
+### What's New
+
+- Upgraded from **Anchor 0.22** (yanked) to **Anchor 0.30.1**
+- Replaced all abandoned dependencies: vipers (Saber), smart-wallet (Goki)
+- **4 programs compile and BPF-build** on Solana SDK 1.18+ / Rust 1.80+
+- **4 IDLs regenerated** with TypeScript type wrappers
+- TypeScript SDK migrated from @saberhq to @coral-xyz/anchor
+
+### Quick Start
+
+```bash
+# Prerequisites: Rust, Solana CLI 1.18+, Anchor CLI 0.30.1
+anchor build                    # Build all 4 programs
+cargo test -p govern            # Run govern unit tests
+```
+
+---
+
+*Original README below:*
 
 [![License](https://img.shields.io/badge/license-AGPL%203.0-blue)](https://github.com/TribecaHQ/tribeca/blob/master/LICENSE)
-[![Build Status](https://img.shields.io/github/workflow/status/TribecaHQ/tribeca/E2E/master)](https://github.com/TribecaHQ/tribeca/actions/workflows/programs-e2e.yml?query=branch%3Amaster)
-[![Contributors](https://img.shields.io/github/contributors/TribecaHQ/tribeca)](https://github.com/TribecaHQ/tribeca/graphs/contributors)
 
 <p align="center">
     <img src="/images/banner.png" />
@@ -11,11 +34,6 @@
 <p align="center">
     An open standard and toolkit for launching DAOs on Solana.
 </p>
-
-- [Website](https://tribeca.so)
-- [Twitter](https://twitter.com/TribecaDAO)
-- [GitHub](https://github.com/TribecaHQ)
-- [Official documentation](https://docs.tribeca.so/)
 
 ## About
 
