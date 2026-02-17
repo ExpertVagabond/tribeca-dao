@@ -16,17 +16,17 @@ with BPF builds succeeding, IDLs regenerated, and the TypeScript SDK migrated.
 
 ## Migration Status
 
-| Story | Description                                            | Status  | Commit                |
-| ----- | ------------------------------------------------------ | ------- | --------------------- |
-| S01   | Dependency audit and migration plan                    | Done    | `63e92e9`             |
-| S02   | Replace vipers macros with inline equivalents          | Done    | `7ca20ea`             |
-| S03   | Create smart-wallet stub crate (Goki replacement)      | Done    | `c913cc1`             |
-| S04   | Upgrade Anchor to 0.30+ and Solana SDK                 | Done    | `4d74c4d`             |
-| S05   | Pin BPF toolchain deps (blake3, proc-macro-crate)      | Done    | `f0ab951` + `b01a5ed` |
-| S06   | Regenerate Anchor 0.30 IDLs and TypeScript types       | Done    | `8f9ef0c`             |
-| S07   | Migrate TypeScript SDK (@saberhq -> @coral-xyz/anchor) | Done    | `803df71`             |
-| S08   | TypeScript SDK compilation fix + 9 smoke tests         | Done    | `991ea17`             |
-| S09   | Demo: create governor + proposal lifecycle             | Planned | --                    |
+| Story | Description                                            | Status | Commit                |
+| ----- | ------------------------------------------------------ | ------ | --------------------- |
+| S01   | Dependency audit and migration plan                    | Done   | `63e92e9`             |
+| S02   | Replace vipers macros with inline equivalents          | Done   | `7ca20ea`             |
+| S03   | Create smart-wallet stub crate (Goki replacement)      | Done   | `c913cc1`             |
+| S04   | Upgrade Anchor to 0.30+ and Solana SDK                 | Done   | `4d74c4d`             |
+| S05   | Pin BPF toolchain deps (blake3, proc-macro-crate)      | Done   | `f0ab951` + `b01a5ed` |
+| S06   | Regenerate Anchor 0.30 IDLs and TypeScript types       | Done   | `8f9ef0c`             |
+| S07   | Migrate TypeScript SDK (@saberhq -> @coral-xyz/anchor) | Done   | `803df71`             |
+| S08   | TypeScript SDK compilation fix + 9 smoke tests         | Done   | `991ea17`             |
+| S09   | Demo: create governor + proposal lifecycle             | Done   | `7488da1`             |
 
 ## What Changed
 
@@ -166,6 +166,7 @@ npx tsc --noEmit                                # Type check
 | IDL generation          | Old format, broken               | Regenerated for 0.30                          |
 | TypeScript SDK          | @saberhq/\* (all abandoned)      | @coral-xyz/anchor                             |
 | Unit tests              | Cannot run                       | Govern proptests pass, 9 SDK smoke tests pass |
+| Demo                    | None                             | Full governor + proposal lifecycle script     |
 
 ## References
 
