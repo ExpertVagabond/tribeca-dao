@@ -12,6 +12,9 @@
 - **4 programs compile and BPF-build** on Solana SDK 1.18+ / Rust 1.80+
 - **4 IDLs regenerated** with TypeScript type wrappers
 - TypeScript SDK migrated from @saberhq to @coral-xyz/anchor
+- **9 SDK smoke tests passing**
+- **Full proposal lifecycle demo** (create governor, propose, vote, queue, execute)
+- **9 migration stories completed** (see MIGRATION.md)
 
 ### Quick Start
 
@@ -23,7 +26,7 @@ cargo test -p govern            # Run govern unit tests
 
 ---
 
-*Original README below:*
+_Original README below:_
 
 [![License](https://img.shields.io/badge/license-AGPL%203.0-blue)](https://github.com/TribecaHQ/tribeca/blob/master/LICENSE)
 
