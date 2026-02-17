@@ -16,41 +16,43 @@ with BPF builds succeeding, IDLs regenerated, and the TypeScript SDK migrated.
 
 ## Migration Status
 
-| Story | Description | Status | Commit |
-|-------|-------------|--------|--------|
-| S01 | Dependency audit and migration plan | Done | `63e92e9` |
-| S02 | Replace vipers macros with inline equivalents | Done | `7ca20ea` |
-| S03 | Create smart-wallet stub crate (Goki replacement) | Done | `c913cc1` |
-| S04 | Upgrade Anchor to 0.30+ and Solana SDK | Done | `4d74c4d` |
-| S05 | Pin BPF toolchain deps (blake3, proc-macro-crate) | Done | `f0ab951` + `b01a5ed` |
-| S06 | Regenerate Anchor 0.30 IDLs and TypeScript types | Done | `8f9ef0c` |
-| S07 | Migrate TypeScript SDK (@saberhq -> @coral-xyz/anchor) | Done | `803df71` |
-| S08 | Integration tests with bankrun | Planned | -- |
-| S09 | Demo: create governor + proposal lifecycle | Planned | -- |
+| Story | Description                                            | Status  | Commit                |
+| ----- | ------------------------------------------------------ | ------- | --------------------- |
+| S01   | Dependency audit and migration plan                    | Done    | `63e92e9`             |
+| S02   | Replace vipers macros with inline equivalents          | Done    | `7ca20ea`             |
+| S03   | Create smart-wallet stub crate (Goki replacement)      | Done    | `c913cc1`             |
+| S04   | Upgrade Anchor to 0.30+ and Solana SDK                 | Done    | `4d74c4d`             |
+| S05   | Pin BPF toolchain deps (blake3, proc-macro-crate)      | Done    | `f0ab951` + `b01a5ed` |
+| S06   | Regenerate Anchor 0.30 IDLs and TypeScript types       | Done    | `8f9ef0c`             |
+| S07   | Migrate TypeScript SDK (@saberhq -> @coral-xyz/anchor) | Done    | `803df71`             |
+| S08   | TypeScript SDK compilation fix + 9 smoke tests         | Done    | `991ea17`             |
+| S09   | Demo: create governor + proposal lifecycle             | Planned | --                    |
 
 ## What Changed
 
 ### Abandoned Dependencies Replaced
 
-| Dependency | What It Was | Replacement |
-|-----------|-------------|-------------|
-| **vipers** (Saber) | Anchor convenience macros | Inline `require!`, `require_keys_eq!`, error variants |
-| **smart-wallet** (Goki) | Multisig execution for governance | Local stub crate with matching account layout + CPI |
-| **@project-serum/anchor** | Old Anchor TS SDK | `@coral-xyz/anchor` 0.30.1 |
-| **@saberhq/anchor-contrib** | AnchorTypes, buildCoderMap, newProgramMap | Native `IdlAccounts`, `IdlTypes`, `Program` from @coral-xyz/anchor |
-| **anchor-lang 0.22** (yanked) | On-chain framework | `anchor-lang` 0.30.1 |
+| Dependency                    | What It Was                               | Replacement                                                        |
+| ----------------------------- | ----------------------------------------- | ------------------------------------------------------------------ |
+| **vipers** (Saber)            | Anchor convenience macros                 | Inline `require!`, `require_keys_eq!`, error variants              |
+| **smart-wallet** (Goki)       | Multisig execution for governance         | Local stub crate with matching account layout + CPI                |
+| **@project-serum/anchor**     | Old Anchor TS SDK                         | `@coral-xyz/anchor` 0.30.1                                         |
+| **@saberhq/anchor-contrib**   | AnchorTypes, buildCoderMap, newProgramMap | Native `IdlAccounts`, `IdlTypes`, `Program` from @coral-xyz/anchor |
+| **anchor-lang 0.22** (yanked) | On-chain framework                        | `anchor-lang` 0.30.1                                               |
 
 ### Rust Program Changes
 
 **All 4 programs** (govern, locked-voter, simple-voter, whitelist-tester) were migrated:
 
 1. **Anchor 0.22 -> 0.30 API changes:**
+
    - `ctx.bumps.get("name")` -> `ctx.bumps.name` (8 instances)
    - Removed `_bump: u8` from instruction signatures (9 instructions)
    - Removed `#[instruction(bump: u8)]` from account structs
    - Updated SPL token import paths for anchor-spl 0.30
 
 2. **Vipers macro replacement** (~75 callsites across 3 programs):
+
    - `assert_keys_eq!(a, b)` -> `require_keys_eq!(a.key(), b.key(), ErrorCode::KeyMismatch)`
    - `invariant!(cond, msg)` -> `require!(cond, ErrorCode::InvariantFailed)`
    - `unwrap_int!(expr)` -> `expr.ok_or_else(|| error!(ErrorCode::MathOverflow))?`
@@ -58,6 +60,7 @@ with BPF builds succeeding, IDLs regenerated, and the TypeScript SDK migrated.
    - `Validate` trait -> standalone `validate()` methods with `#[access_control]`
 
 3. **Smart-wallet stub crate:**
+
    - Created `programs/smart-wallet-stub/` matching Goki's account layout
    - Implements `SmartWallet` account, `TXInstruction`, `TXAccountMeta` types
    - CPI stubs for `create_transaction` and `create_transaction_with_timelock`
@@ -153,16 +156,16 @@ npx tsc --noEmit                                # Type check
 
 ## What Was Dead, What's Alive
 
-| Component | Before (2022) | After (2026) |
-|-----------|--------------|--------------|
-| `anchor build` | Fails (yanked crate, 50+ errors) | All 4 programs build |
-| Rust toolchain | Requires Rust ~1.60 (EOL) | Works on Rust 1.80+ |
-| Vipers dependency | Abandoned (Saber shutdown) | Removed, inlined |
-| Smart-wallet dependency | Abandoned (Goki shutdown) | Local stub crate |
-| Anchor version | 0.22 (yanked from crates.io) | 0.30.1 |
-| IDL generation | Old format, broken | Regenerated for 0.30 |
-| TypeScript SDK | @saberhq/* (all abandoned) | @coral-xyz/anchor |
-| Unit tests | Cannot run | Govern proptests pass |
+| Component               | Before (2022)                    | After (2026)                                  |
+| ----------------------- | -------------------------------- | --------------------------------------------- |
+| `anchor build`          | Fails (yanked crate, 50+ errors) | All 4 programs build                          |
+| Rust toolchain          | Requires Rust ~1.60 (EOL)        | Works on Rust 1.80+                           |
+| Vipers dependency       | Abandoned (Saber shutdown)       | Removed, inlined                              |
+| Smart-wallet dependency | Abandoned (Goki shutdown)        | Local stub crate                              |
+| Anchor version          | 0.22 (yanked from crates.io)     | 0.30.1                                        |
+| IDL generation          | Old format, broken               | Regenerated for 0.30                          |
+| TypeScript SDK          | @saberhq/\* (all abandoned)      | @coral-xyz/anchor                             |
+| Unit tests              | Cannot run                       | Govern proptests pass, 9 SDK smoke tests pass |
 
 ## References
 
