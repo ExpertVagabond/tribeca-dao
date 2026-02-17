@@ -1,6 +1,6 @@
 import { GokiSDK } from "@gokiprotocol/client";
-import type { BN } from "@project-serum/anchor";
-import { newProgramMap } from "@saberhq/anchor-contrib";
+import { Program } from "@coral-xyz/anchor";
+import type { BN } from "@coral-xyz/anchor";
 import type { AugmentedProvider, Provider } from "@saberhq/solana-contrib";
 import {
   SolanaAugmentedProvider,
@@ -21,6 +21,20 @@ import { createLocker, GovernWrapper } from "./wrappers";
 import { findLockerAddress } from "./wrappers/lockedVoter/pda";
 import { findSimpleElectorateAddress } from "./wrappers/simpleVoter/pda";
 import type { PendingElectorate } from "./wrappers/simpleVoter/types";
+
+/**
+ * Helper to construct program instances from IDLs and addresses.
+ */
+function makeProgramMap(provider: Provider): TribecaPrograms {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mkProgram = (idl: any, address: any) =>
+    new Program(idl, address, provider as any) as any;
+  return {
+    SimpleVoter: mkProgram(TRIBECA_IDLS.SimpleVoter, TRIBECA_ADDRESSES.SimpleVoter),
+    Govern: mkProgram(TRIBECA_IDLS.Govern, TRIBECA_ADDRESSES.Govern),
+    LockedVoter: mkProgram(TRIBECA_IDLS.LockedVoter, TRIBECA_ADDRESSES.LockedVoter),
+  };
+}
 
 /**
  * Tribeca protocol SDK.
@@ -58,11 +72,7 @@ export class TribecaSDK {
    * @returns
    */
   static load({ provider }: { provider: Provider }): TribecaSDK {
-    const programs: TribecaPrograms = newProgramMap<TribecaPrograms>(
-      provider,
-      TRIBECA_IDLS,
-      TRIBECA_ADDRESSES
-    );
+    const programs = makeProgramMap(provider);
     return new TribecaSDK(new SolanaAugmentedProvider(provider), programs);
   }
 

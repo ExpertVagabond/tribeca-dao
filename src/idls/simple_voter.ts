@@ -2113,3 +2113,7 @@ export const UsimpleUvoterJSON: UsimpleUvoterIDL =
     }
   ]
 };
+
+// Backward-compatible aliases
+export type SimpleVoterIDL = UsimpleUvoterIDL;
+export const SimpleVoterJSON: SimpleVoterIDL = UsimpleUvoterJSON;

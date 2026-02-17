@@ -1,4 +1,4 @@
-import { buildCoderMap } from "@saberhq/anchor-contrib";
+import { Program } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "bn.js";
 
@@ -8,12 +8,9 @@ import { SimpleVoterJSON } from "./idls/simple_voter";
 import type {
   GovernanceParameters,
   GovernProgram,
-  GovernTypes,
   LockedVoterProgram,
-  LockedVoterTypes,
   LockerParams,
   SimpleVoterProgram,
-  SimpleVoterTypes,
 } from "./programs";
 
 /**
@@ -40,15 +37,6 @@ export const TRIBECA_IDLS = {
   Govern: GovernJSON,
   LockedVoter: LockedVoterJSON,
 };
-
-/**
- * Coders.
- */
-export const TRIBECA_CODERS = buildCoderMap<{
-  SimpleVoter: SimpleVoterTypes;
-  Govern: GovernTypes;
-  LockedVoter: LockedVoterTypes;
-}>(TRIBECA_IDLS, TRIBECA_ADDRESSES);
 
 export const DEFAULT_DECIMALS = 6;
 

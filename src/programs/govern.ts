@@ -1,39 +1,32 @@
-import type { AnchorTypes } from "@saberhq/anchor-contrib";
+import type { IdlAccounts, IdlTypes, Program } from "@coral-xyz/anchor";
 import type { AccountMeta } from "@solana/web3.js";
 
 import type { GovernIDL } from "../idls/govern";
 
 export * from "../idls/govern";
 
-export type GovernTypes = AnchorTypes<
-  GovernIDL,
-  {
-    governor: GovernorData;
-    proposal: ProposalData;
-    vote: VoteData;
-    proposalMeta: ProposalMetaData;
-  },
-  {
-    ProposalInstruction: ProposalInstruction;
-    ProposalAccountMeta: AccountMeta;
-    GovernanceParameters: GovernanceParameters;
-  }
->;
-
-type Accounts = GovernTypes["Accounts"];
-export type GovernorData = Accounts["Governor"];
-export type ProposalData = Accounts["Proposal"];
-export type VoteData = Accounts["Vote"];
-export type ProposalMetaData = Accounts["ProposalMeta"] & {
+/**
+ * Account data types extracted from the Govern IDL.
+ */
+export type GovernorData = IdlAccounts<GovernIDL>["governor"];
+export type ProposalData = IdlAccounts<GovernIDL>["proposal"];
+export type VoteData = IdlAccounts<GovernIDL>["vote"];
+export type ProposalMetaData = IdlAccounts<GovernIDL>["proposalMeta"] & {
   title: string;
   descriptionLink: string;
 };
 
+/**
+ * Defined types from the Govern IDL.
+ */
 export type GovernanceParameters =
-  GovernTypes["Defined"]["GovernanceParameters"];
+  IdlTypes<GovernIDL>["governanceParameters"];
 export type ProposalInstruction =
-  GovernTypes["Defined"]["ProposalInstruction"] & {
+  IdlTypes<GovernIDL>["proposalInstruction"] & {
     keys: AccountMeta[];
   };
 
-export type GovernProgram = GovernTypes["Program"];
+/**
+ * The Govern program type.
+ */
+export type GovernProgram = Program<GovernIDL>;

@@ -3715,3 +3715,7 @@ export const UlockedUvoterJSON: UlockedUvoterIDL =
     }
   ]
 };
+
+// Backward-compatible aliases
+export type LockedVoterIDL = UlockedUvoterIDL;
+export const LockedVoterJSON: LockedVoterIDL = UlockedUvoterJSON;

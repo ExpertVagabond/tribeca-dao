@@ -3451,3 +3451,7 @@ export const UgovernJSON: UgovernIDL =
     }
   ]
 };
+
+// Backward-compatible aliases
+export type GovernIDL = UgovernIDL;
+export const GovernJSON: GovernIDL = UgovernJSON;
