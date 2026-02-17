@@ -20,7 +20,7 @@
     "lib": ["ES2019"],
     "importHelpers": true
   },
-  "include": ["src/", "tests/sdk-smoke.test.ts"],
+  "include": ["src/", "tests/sdk-smoke.test.ts", "demo/"],
   "exclude": [
     "tests/govern.spec.ts",
     "tests/simple-voter.spec.ts",
