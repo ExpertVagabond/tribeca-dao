@@ -23,10 +23,10 @@ deps
 .vagrant/
 test-ledger/
 
-# Generated IDL types
-artifacts/
+# Generated IDL types (tracked for revival - regenerate via `anchor idl build`)
+# artifacts/
 dist/
-src/idls/
+# src/idls/
 
 site/
 

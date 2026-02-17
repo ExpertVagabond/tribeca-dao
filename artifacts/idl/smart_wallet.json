@@ -1,0 +1,328 @@
+{
+  "address": "GokivDYuQXPZCWRkwMhdH2h91KpDQXBEmpgBgs55bnpH",
+  "metadata": {
+    "name": "smart_wallet",
+    "version": "0.7.0",
+    "spec": "0.1.0",
+    "description": "Stub of Goki smart-wallet for Tribeca DAO compilation. Not a real program."
+  },
+  "docs": [
+    "Stub smart_wallet program."
+  ],
+  "instructions": [
+    {
+      "name": "create_transaction",
+      "docs": [
+        "Create a new transaction (stub -- never called on-chain)."
+      ],
+      "discriminator": [
+        227,
+        193,
+        53,
+        239,
+        55,
+        126,
+        112,
+        105
+      ],
+      "accounts": [
+        {
+          "name": "smart_wallet",
+          "docs": [
+            "The [SmartWallet]."
+          ],
+          "writable": true
+        },
+        {
+          "name": "transaction",
+          "docs": [
+            "The [Transaction] to create. `UncheckedAccount` in the stub because",
+            "we do not define a full `Transaction` account type here."
+          ],
+          "writable": true
+        },
+        {
+          "name": "proposer",
+          "docs": [
+            "One of the owners. Validated by the real program."
+          ],
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "docs": [
+            "Payer of the [Transaction] account creation."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "The System program."
+          ],
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "_bump",
+          "type": "u8"
+        },
+        {
+          "name": "_instructions",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "TXInstruction"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "create_transaction_with_timelock",
+      "docs": [
+        "Create a new transaction with a timelock (stub -- never called on-chain)."
+      ],
+      "discriminator": [
+        93,
+        252,
+        41,
+        108,
+        86,
+        76,
+        89,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "smart_wallet",
+          "docs": [
+            "The [SmartWallet]."
+          ],
+          "writable": true
+        },
+        {
+          "name": "transaction",
+          "docs": [
+            "The [Transaction] to create. `UncheckedAccount` in the stub because",
+            "we do not define a full `Transaction` account type here."
+          ],
+          "writable": true
+        },
+        {
+          "name": "proposer",
+          "docs": [
+            "One of the owners. Validated by the real program."
+          ],
+          "signer": true
+        },
+        {
+          "name": "payer",
+          "docs": [
+            "Payer of the [Transaction] account creation."
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "docs": [
+            "The System program."
+          ],
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "_bump",
+          "type": "u8"
+        },
+        {
+          "name": "_instructions",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "TXInstruction"
+              }
+            }
+          }
+        },
+        {
+          "name": "_eta",
+          "type": "i64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "SmartWallet",
+      "discriminator": [
+        67,
+        59,
+        220,
+        179,
+        41,
+        10,
+        60,
+        177
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "SmartWallet",
+      "docs": [
+        "A [SmartWallet] is a multisig wallet with Timelock capabilities."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "base",
+            "docs": [
+              "Base key used to generate the PDA."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "bump",
+            "docs": [
+              "Bump seed for PDA derivation."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "threshold",
+            "docs": [
+              "Minimum number of owner approvals needed to sign a [Transaction]."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "minimum_delay",
+            "docs": [
+              "Minimum delay between approval and execution, in seconds."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "grace_period",
+            "docs": [
+              "Time after the ETA until a [Transaction] expires."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "owner_set_seqno",
+            "docs": [
+              "Sequence number for tracking owner set changes."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "num_transactions",
+            "docs": [
+              "Auto-incrementing transaction index."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "owners",
+            "docs": [
+              "Owners of the [SmartWallet]."
+            ],
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "reserved",
+            "docs": [
+              "Reserved for future use."
+            ],
+            "type": {
+              "array": [
+                "u64",
+                16
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TXAccountMeta",
+      "docs": [
+        "Account metadata used to define [TXInstruction]s."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "pubkey",
+            "docs": [
+              "An account's public key."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "is_signer",
+            "docs": [
+              "True if an Instruction requires a Transaction signature matching `pubkey`."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "is_writable",
+            "docs": [
+              "True if the `pubkey` can be loaded as a read-write account."
+            ],
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TXInstruction",
+      "docs": [
+        "A single instruction that is part of a [Transaction]."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "program_id",
+            "docs": [
+              "Pubkey of the instruction processor that executes this instruction."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "keys",
+            "docs": [
+              "Metadata for what accounts should be passed to the instruction processor."
+            ],
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "TXAccountMeta"
+                }
+              }
+            }
+          },
+          {
+            "name": "data",
+            "docs": [
+              "Opaque data passed to the instruction processor."
+            ],
+            "type": "bytes"
+          }
+        ]
+      }
+    }
+  ]
+}

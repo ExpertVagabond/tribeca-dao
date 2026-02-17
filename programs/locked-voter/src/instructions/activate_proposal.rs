@@ -1,4 +1,5 @@
 use crate::*;
+use govern::Govern;
 
 /// Accounts for [locked_voter::activate_proposal].
 #[derive(Accounts)]
@@ -15,7 +16,7 @@ pub struct ActivateProposal<'info> {
     /// The [Escrow]'s owner.
     pub escrow_owner: Signer<'info>,
     /// The [govern] program.
-    pub govern_program: Program<'info, govern::program::Govern>,
+    pub govern_program: Program<'info, Govern>,
 }
 
 impl<'info> ActivateProposal<'info> {

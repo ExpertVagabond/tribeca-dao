@@ -34,6 +34,17 @@ pub mod smart_wallet {
 }
 
 // ---------------------------------------------------------------------------
+// Anchor 0.30's `#[derive(Accounts)]` unconditionally calls `T::id()` on
+// cross-crate `Account<'info, T>` types. Provide `Id` so govern,
+// locked-voter, and simple-voter can compile when depending on this crate.
+// ---------------------------------------------------------------------------
+impl anchor_lang::Id for SmartWallet {
+    fn id() -> Pubkey {
+        crate::ID
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Account structs
 // ---------------------------------------------------------------------------
 

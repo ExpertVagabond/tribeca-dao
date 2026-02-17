@@ -22,6 +22,23 @@ pub use state::*;
 
 declare_id!("Govz1VyoyLD5BL6CSCxUJLVLsQHRwjfFj1prNsdNg5Jw");
 
+// ---------------------------------------------------------------------------
+// CPI workaround: When govern is compiled as a dependency (cpi/no-entrypoint),
+// the `#[program]` macro does not generate `program::Govern`. Define it at
+// the crate root so it's available via `use super::*` in the macro-generated
+// `program` module, making `govern::program::Govern` resolve correctly.
+// ---------------------------------------------------------------------------
+#[cfg(feature = "cpi")]
+#[derive(Clone)]
+pub struct Govern;
+
+#[cfg(feature = "cpi")]
+impl anchor_lang::Id for Govern {
+    fn id() -> Pubkey {
+        crate::ID
+    }
+}
+
 /// The [govern] program.
 #[program]
 pub mod govern {

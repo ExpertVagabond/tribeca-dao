@@ -2,7 +2,7 @@
 
 use anchor_lang::prelude::*;
 use anchor_spl::token::*;
-use govern::{proposal::ProposalState, Governor, Proposal, Vote};
+use govern::{proposal::ProposalState, Govern, Governor, Proposal, Vote};
 
 mod account_validators;
 pub mod macros;
@@ -170,7 +170,7 @@ pub struct TribecaContext<'info> {
     #[account(mut)]
     pub governor: Account<'info, Governor>,
     /// TODO(michael): Docs
-    pub program: Program<'info, govern::program::Govern>,
+    pub program: Program<'info, Govern>,
 }
 
 #[derive(Accounts)]
@@ -180,7 +180,7 @@ pub struct ActivateProposal<'info> {
     #[account(mut)]
     pub proposal: Account<'info, Proposal>,
     /// The [govern] program.
-    pub govern_program: Program<'info, govern::program::Govern>,
+    pub govern_program: Program<'info, Govern>,
 }
 
 #[derive(Accounts)]

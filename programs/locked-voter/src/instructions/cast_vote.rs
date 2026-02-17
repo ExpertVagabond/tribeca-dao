@@ -1,5 +1,5 @@
 use crate::*;
-use govern::ProposalState;
+use govern::{Govern, ProposalState};
 
 /// Accounts for [locked_voter::cast_vote].
 #[derive(Accounts)]
@@ -21,7 +21,7 @@ pub struct CastVote<'info> {
     /// The [Governor].
     pub governor: Account<'info, Governor>,
     /// The [govern] program.
-    pub govern_program: Program<'info, govern::program::Govern>,
+    pub govern_program: Program<'info, Govern>,
 }
 
 impl<'info> CastVote<'info> {
