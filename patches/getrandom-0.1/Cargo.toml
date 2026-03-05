@@ -1,0 +1,13 @@
+[package]
+name = "getrandom"
+version = "0.1.16"
+edition = "2021"
+description = "BPF/SBF-compatible shim for getrandom 0.1"
+
+[features]
+std = []
+wasm-bindgen = []
+custom = []
+js = []
+test-in-browser = []
+dummy = []

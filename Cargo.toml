@@ -1,9 +1,14 @@
 [workspace]
 members = ["programs/*"]
+resolver = "2"
+
+[patch.crates-io]
+getrandom = { path = "patches/getrandom-0.1" }
 
 [profile.release]
 lto = "fat"
 codegen-units = 1
+overflow-checks = true
 
 [profile.release.build-override]
 opt-level = 3
